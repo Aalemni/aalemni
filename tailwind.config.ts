@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
 
 const config = {
   darkMode: ["class"],
@@ -7,6 +7,7 @@ const config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    "*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
   theme: {
@@ -19,6 +20,12 @@ const config = {
     },
     extend: {
       colors: {
+        aalemni: {
+          orange: "#F67A28",
+          navy: "#202D5B",
+          blue: "#345CAD",
+          light: "#F8F8FA",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -75,6 +82,7 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+} satisfies Config
 
-export default config;
+export default config
+
