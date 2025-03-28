@@ -26,7 +26,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen w-full">
         <AalemniSidebar userRole={userRole} />
         <SidebarInset className="flex-1">
           <header className="flex h-16 items-center gap-4 border-b bg-background px-6">

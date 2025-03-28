@@ -40,11 +40,13 @@ import { Button } from "@/components/uii_/button";
 import { Badge } from "@/components/uii_/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { TranslatedContent } from "@/components/translated-content";
+import { Navbar } from "@/components/layout/navbar";
 
 export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
+      <Navbar />
       <section className="relative overflow-hidden bg-gradient-to-b from-aalemni-navy/10 via-background to-background pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
         <div className="container relative z-10">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8">
