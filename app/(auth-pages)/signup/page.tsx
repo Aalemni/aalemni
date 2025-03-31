@@ -73,9 +73,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { signUpAction } from "@/supabase/actions/auth_actions";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFromData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+    agree_terms: false,
+    agree_privacy: false,
+    phone: "",
+  });
   const [userType, setUserType] = useState("student");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -86,7 +96,7 @@ export default function SignupPage() {
 
     // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // await signUpAction();
       // In a real app, you would handle registration here
       if (userType === "student") {
         router.push("/student/dashboard");
@@ -137,15 +147,26 @@ export default function SignupPage() {
               </RadioGroup>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input id="firstName" placeholder="John" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input id="lastName" placeholder="Doe" required />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="fullname">Full Name</Label>
+              <Input
+                id="fullname"
+                type="fullname"
+                placeholder="e.g. Hadi Rahhal"
+                required
+                autoComplete="fullname"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="useranme">Username</Label>
+              <Input
+                id="useranme"
+                type="useranme"
+                placeholder="e.g. its._.hadi-rahhal"
+                required
+                autoComplete="useranme"
+              />
             </div>
 
             <div className="space-y-2">
@@ -153,9 +174,20 @@ export default function SignupPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder="e.g. hadi_rahhal@gmail.com"
                 required
                 autoComplete="email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phonenumber">Phone Number</Label>
+              <Input
+                id="phonenumber"
+                type="phonenumber"
+                placeholder="e.g. +961 ** *** ***"
+                required
+                autoComplete="phonenumber"
               />
             </div>
 
