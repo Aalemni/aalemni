@@ -41,7 +41,7 @@ export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
           <header className="flex h-16 items-center gap-4 border-b bg-background px-6">
             <SidebarTrigger />
             <div className="flex-1" />
-            <LanguageSwitcher />
+            {/* <LanguageSwitcher /> */}
             <ModeToggle />
             <Button variant="outline">{t("common.help")}</Button>
           </header>

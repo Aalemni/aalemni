@@ -81,6 +81,7 @@ import "@/app/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
+import { ToastContainer, toast } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -101,6 +102,8 @@ export default function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers attribute="class" defaultTheme="system" enableSystem>
+          <ToastContainer />
+          {/* <Navbar /> */}
           {children}
         </Providers>
       </body>

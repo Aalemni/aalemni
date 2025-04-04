@@ -107,7 +107,7 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     phoneNumber TEXT UNIQUE,
     role TEXT CHECK (role IN ('admin', 'instructor', 'student')) NOT NULL,
-    status TEXT CHECK (status IN ('active', 'inactive')) NOT NULL
+    status TEXT CHECK (status IN ('active', 'inactive', 'pending', 'banned')) NOT NULL
 );
 
 
@@ -689,6 +689,19 @@ WITH CHECK (
   AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
 );
 
+ALTER POLICY "Admins can manage users"
+ON "public"."users"
+TO public
+USING (
+  auth.role() = 'authenticated'::text 
+  AND auth.uid() IS NOT NULL
+  AND EXISTS (
+    SELECT 1 FROM users users_1
+    WHERE auth.uid() = users_1.userid 
+    AND users_1.role = 'admin'::text
+  )
+)
+WITH CHECK (true);
 
 
 ---- SUBSCRIPTIONS ----

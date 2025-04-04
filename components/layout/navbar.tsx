@@ -113,10 +113,10 @@ export function Navbar() {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <LanguageSwitcher />
                 <ModeToggle />
-              </div>
+              </div> */}
 
               <div className="flex flex-col gap-2">
                 {navItems.map((item) => (
@@ -230,7 +230,7 @@ export function Navbar() {
               className={`w-64 ${dir === "rtl" ? "pr-8" : "pl-8"} rounded-full bg-muted`}
             />
           </div>
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
           <ModeToggle />
           <Link href="/login">
             <Button

@@ -14,11 +14,12 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
   }
+  console.log(redirectTo);
 
   if (redirectTo) {
     return NextResponse.redirect(`${origin}${redirectTo}`);
   }
-
+  console.log('hello 1');
   // URL to redirect to after sign up process completes
   return NextResponse.redirect(`${origin}/protected`);
 }
