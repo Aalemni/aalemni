@@ -2,9 +2,15 @@
 
 import CourseDetailPage from "@/components/course_by_id/course_by_id";
 import { Course } from "@/types/course"; // If you created a separate type file
+import { type Metadata } from "next";
+
+interface PageProps {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
 // This would normally come from a database
-const getCourse = (id: string): Course => {
+async function getCourse(id: string): Promise<Course> {
   // Mock data for a specific course
   return {
     id: Number.parseInt(id),
@@ -303,9 +309,24 @@ const getCourse = (id: string): Course => {
       },
     ],
   };
-};
-export default async function Page({ params }: { params: { id: string } }) {
-  const course = getCourse(params.id);
+}
+
+// Optionally add metadata
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const course = await getCourse(id);
+
+  return {
+    title: course.title,
+    // ... other metadata
+  };
+}
+
+export default async function Page({ params }: PageProps) {
+  const { id } = await params;
+  const course = await getCourse(id);
 
   return <CourseDetailPage course={course} />;
 }
