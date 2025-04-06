@@ -1,4 +1,4 @@
-import { Message } from "@/components/form-message";
+import { Message } from "@/types/types";
 import ForgotPassword from "@/components/forgot_password/forgot_password";
 
 export default async function Page(props: { searchParams: Promise<Message> }) {
