@@ -6,7 +6,7 @@ import { type Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // This would normally come from a database
