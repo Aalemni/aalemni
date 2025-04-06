@@ -1,15 +1,10 @@
 "use server";
 
 import CourseDetailPage from "@/components/course_by_id/course_by_id";
-
-export default async function Page({ params }: { params: { id: string } }) {
-  const course = getCourse(params.id);
-
-  return <CourseDetailPage course={course} />;
-}
+import { Course } from "@/types/course"; // If you created a separate type file
 
 // This would normally come from a database
-const getCourse = (id: string) => {
+const getCourse = (id: string): Course => {
   // Mock data for a specific course
   return {
     id: Number.parseInt(id),
@@ -309,3 +304,8 @@ const getCourse = (id: string) => {
     ],
   };
 };
+export default async function Page({ params }: { params: { id: string } }) {
+  const course = getCourse(params.id);
+
+  return <CourseDetailPage course={course} />;
+}
