@@ -25,8 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Course } from "@/types/course";
-
+import { Course } from "@/types/types";
 
 export default function CourseDetailPage({ course }: { course: Course }) {
   return (

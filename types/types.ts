@@ -79,3 +79,56 @@ export type Course = {
     price: string;
   }[];
 };
+
+export type Instructor = {
+  id: number;
+  name: string;
+  title: string;
+  image: string;
+  coverImage: string;
+  rating: number;
+  reviewCount: number;
+  studentCount: number;
+  courseCount: number;
+  specialties: string[];
+  bio: string;
+  featured: boolean;
+  languages: string[];
+  price: string;
+  location: string;
+  experience: string;
+  education: {
+    degree: string;
+    institution: string;
+    year: string;
+  }[];
+  certifications: string[];
+  about: string;
+  courses: {
+    id: number;
+    title: string;
+    image: string;
+    rating: number;
+    reviewCount: number;
+    studentCount: number;
+    level: string;
+    hours: number;
+    price: string;
+    description: string;
+  }[];
+  reviews: {
+    id: number;
+    name: string;
+    image: string;
+    rating: number;
+    date: string;
+    comment: string;
+  }[];
+  schedule: {
+    id: number;
+    title: string;
+    date: string;
+    time: string;
+    spots: string;
+  }[];
+};

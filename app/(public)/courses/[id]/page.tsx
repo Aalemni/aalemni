@@ -1,17 +1,15 @@
 "use server";
 
 import CourseDetailPage from "@/components/course_by_id/course_by_id";
-import { Course } from "@/types/course"; // If you created a separate type file
+import { Course } from "@/types/types"; // If you created a separate type file
 import { type Metadata } from "next";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-// This would normally come from a database
 async function getCourse(id: string): Promise<Course> {
-  // Mock data for a specific course
   return {
     id: Number.parseInt(id),
     title: "Complete React Developer in 2023",
@@ -311,7 +309,6 @@ async function getCourse(id: string): Promise<Course> {
   };
 }
 
-// Optionally add metadata
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -320,7 +317,6 @@ export async function generateMetadata({
 
   return {
     title: course.title,
-    // ... other metadata
   };
 }
 
