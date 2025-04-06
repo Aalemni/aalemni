@@ -132,3 +132,8 @@ export type Instructor = {
     spots: string;
   }[];
 };
+
+export type Message =
+  | { success: string }
+  | { error: string }
+  | { message: string };

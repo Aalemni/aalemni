@@ -1,8 +1,4 @@
-export type Message =
-  | { success: string }
-  | { error: string }
-  | { message: string };
-
+import { Message } from "@/types/types";
 export function FormMessage({ message }: { message: Message }) {
   return (
     <div className="flex flex-col gap-2 w-full max-w-md text-sm">
