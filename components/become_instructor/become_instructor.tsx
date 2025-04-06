@@ -892,7 +892,6 @@ export default function BecomeInstructorPage() {
                       >
                         {isLoading ? "Creating account..." : "Create account"}
                       </Button>
-                      
                     </div>
                   </form>
                 </CardContent>

@@ -1,10 +1,11 @@
 "use server";
-import ContactPage from "@/components/contact/contact";
+
+import CalendarPage from "@/components/calender/calender";
 
 export default async function Page() {
   return (
     <>
-      <ContactPage />
+      <CalendarPage />
     </>
   );
 }

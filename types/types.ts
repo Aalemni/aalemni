@@ -137,3 +137,42 @@ export type Message =
   | { success: string }
   | { error: string }
   | { message: string };
+
+export type Course_2 = {
+  id: number;
+  title: string;
+  thumbnail: string;
+  description: string;
+  students: number;
+  rating: number;
+  lastUpdated: string; // or Date if you prefer
+  status: "draft" | "published" | "archived"; // assuming fixed statuses
+  category: string;
+  modules: {
+    id: number;
+    title: string;
+    description: string;
+    lessons: {
+      id: number;
+      title: string;
+      description: string;
+      duration: string;
+      pages: {
+        id: number;
+        title: string;
+      }[];
+    }[];
+  }[];
+  forum: {
+    totalTopics: number;
+    unansweredQuestions: number;
+  };
+  reviews: {
+    total: number;
+    average: number;
+    distribution: {
+      stars: 1 | 2 | 3 | 4 | 5;
+      count: number;
+    }[];
+  };
+};
