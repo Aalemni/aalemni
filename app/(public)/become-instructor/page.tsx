@@ -1,5 +1,5 @@
 "use server";
-import BecomeInstructorPage from "@/pages/become_instructor/become_instructor";
+import BecomeInstructorPage from "@/components/become_instructor/become_instructor";
 
 export default async function Page() {
   return (

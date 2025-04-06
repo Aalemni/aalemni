@@ -1,4 +1,4 @@
-import SignupPage from "@/pages/signup/signup";
+import SignupPage from "@/components/signup/signup";
 import React from "react";
 
 export default function Page() {
