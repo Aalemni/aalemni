@@ -1,6 +1,6 @@
-"use client"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
+"use client";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   BookOpen,
   Calendar,
@@ -21,7 +21,7 @@ import {
   Flag,
   LogOut,
   User,
-} from "lucide-react"
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -35,20 +35,29 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-type UserRole = "student" | "trainer" | "admin"
+type UserRole = "student" | "trainer" | "admin";
 
 interface SidebarProps {
-  userRole?: UserRole
-  userName?: string
-  userImage?: string
+  userRole?: UserRole;
+  userName?: string;
+  userImage?: string;
 }
 
-export function AalemniSidebar({ userRole = "student", userName = "John Doe", userImage }: SidebarProps) {
-  const pathname = usePathname()
+export function AalemniSidebar({
+  userRole = "student",
+  userName = "John Doe",
+  userImage,
+}: SidebarProps) {
+  const pathname = usePathname();
 
   // Navigation items based on user role
   const getNavItems = (role: UserRole) => {
@@ -85,7 +94,7 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             icon: Settings,
             href: "/student/settings",
           },
-        ]
+        ];
       case "trainer":
         return [
           {
@@ -118,7 +127,7 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             icon: Settings,
             href: "/trainer/settings",
           },
-        ]
+        ];
       case "admin":
         return [
           {
@@ -161,27 +170,27 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             icon: Settings,
             href: "/admin/settings",
           },
-        ]
+        ];
       default:
-        return []
+        return [];
     }
-  }
+  };
 
-  const navItems = getNavItems(userRole)
+  const navItems = getNavItems(userRole);
 
   // Get role display name
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
       case "student":
-        return "Student"
+        return "Student";
       case "trainer":
-        return "Trainer"
+        return "Trainer";
       case "admin":
-        return "Administrator"
+        return "Administrator";
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   return (
     <Sidebar variant="floating" className="border-r">
@@ -201,7 +210,11 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.title}
+                  >
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -219,7 +232,11 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === "/community"} tooltip="Community">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/community"}
+                    tooltip="Community"
+                  >
                     <Link href="/community">
                       <MessageSquare className="h-4 w-4" />
                       <span>Community Forum</span>
@@ -227,7 +244,11 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === "/calendar"} tooltip="Calendar">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/calendar"}
+                    tooltip="Calendar"
+                  >
                     <Link href="/calendar">
                       <Calendar className="h-4 w-4" />
                       <span>Upcoming Sessions</span>
@@ -245,7 +266,11 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === "/admin/analytics"} tooltip="Analytics">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/admin/analytics"}
+                    tooltip="Analytics"
+                  >
                     <Link href="/admin/analytics">
                       <BarChart className="h-4 w-4" />
                       <span>Platform Analytics</span>
@@ -253,7 +278,11 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === "/admin/reports"} tooltip="Reports">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/admin/reports"}
+                    tooltip="Reports"
+                  >
                     <Link href="/admin/reports">
                       <Flag className="h-4 w-4" />
                       <span>Reports & Issues</span>
@@ -277,7 +306,9 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
                   </Avatar>
                   <div className="flex flex-col items-start">
                     <span className="text-sm font-medium">{userName}</span>
-                    <span className="text-xs text-muted-foreground">{getRoleDisplayName(userRole)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {getRoleDisplayName(userRole)}
+                    </span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -307,6 +338,5 @@ export function AalemniSidebar({ userRole = "student", userName = "John Doe", us
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
-

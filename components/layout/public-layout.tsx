@@ -1,9 +1,9 @@
-import type * as React from "react"
-import { Navbar } from "./navbar"
-import { Footer } from "./footer"
+import type * as React from "react";
+import { Navbar } from "./navbar";
+import { Footer } from "./footer";
 
 interface PublicLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function PublicLayout({ children }: PublicLayoutProps) {
@@ -13,6 +13,5 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
-  )
+  );
 }
-

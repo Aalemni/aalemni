@@ -1,36 +1,40 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { usePathname } from "next/navigation"
+import type * as React from "react";
+import { usePathname } from "next/navigation";
 
-import { AalemniSidebar } from "./sidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { LanguageSwitcher } from "@/components/language-switcher"
-import { useTranslation } from "@/contexts/translation-context"
+import { AalemniSidebar } from "./sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
+import { useTranslation } from "@/contexts/translation-context";
 
 interface MainLayoutProps {
-  children: React.ReactNode
-  showSidebar?: boolean
+  children: React.ReactNode;
+  showSidebar?: boolean;
 }
 
 export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
-  const pathname = usePathname()
-  const { t } = useTranslation()
+  const pathname = usePathname();
+  const { t } = useTranslation();
 
   // Determine user role based on URL path
   const getUserRole = () => {
-    if (pathname.startsWith("/admin")) return "admin"
-    if (pathname.startsWith("/trainer")) return "trainer"
-    if (pathname.startsWith("/student")) return "student"
-    return "student"
-  }
+    if (!pathname) return "student";
+    if (pathname.startsWith("/admin")) return "admin";
+    if (pathname.startsWith("/trainer")) return "trainer";
+    if (pathname.startsWith("/student")) return "student";
+    return "student";
+  };
 
-  const userRole = getUserRole()
+  const userRole = getUserRole();
 
   if (!showSidebar) {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
   return (
@@ -49,6 +53,5 @@ export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }
-

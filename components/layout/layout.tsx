@@ -1,28 +1,33 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { usePathname } from "next/navigation"
+import type * as React from "react";
+import { usePathname } from "next/navigation";
 
-import { AalemniSidebar } from "./sidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
+import { AalemniSidebar } from "./sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface LayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // Determine user role based on URL path
   const getUserRole = () => {
-    if (pathname.startsWith("/admin")) return "admin"
-    if (pathname.startsWith("/trainer")) return "trainer"
-    return "student"
-  }
+    if (!pathname) return "student";
+    if (pathname.startsWith("/admin")) return "admin";
+    if (pathname.startsWith("/trainer")) return "trainer";
+    return "student";
+  };
 
-  const userRole = getUserRole()
+  const userRole = getUserRole();
 
   return (
     <SidebarProvider>
@@ -39,6 +44,5 @@ export function Layout({ children }: LayoutProps) {
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }
-

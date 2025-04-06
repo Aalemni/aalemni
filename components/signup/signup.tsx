@@ -224,7 +224,10 @@ export default function SignupPage() {
                 className="mt-1"
                 checked={Boolean(formData.agree_terms)}
                 onCheckedChange={(checked) =>
-                  setFormData({ ...formData, agree_terms: checked })
+                  setFormData({
+                    ...formData,
+                    agree_terms: checked ? true : false,
+                  })
                 }
               />
               <Label htmlFor="terms" className="text-sm leading-tight">
