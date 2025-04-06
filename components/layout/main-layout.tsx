@@ -26,7 +26,7 @@ export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
   const getUserRole = () => {
     if (!pathname) return "student";
     if (pathname.startsWith("/admin")) return "admin";
-    if (pathname.startsWith("/trainer")) return "trainer";
+    if (pathname.startsWith("/instructor")) return "instructor";
     if (pathname.startsWith("/student")) return "student";
     return "student";
   };

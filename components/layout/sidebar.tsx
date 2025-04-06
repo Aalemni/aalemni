@@ -44,7 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type UserRole = "student" | "trainer" | "admin";
+type UserRole = "student" | "instructor" | "admin";
 
 interface SidebarProps {
   userRole?: UserRole;
@@ -58,7 +58,7 @@ export function AalemniSidebar({
   userImage,
 }: SidebarProps) {
   const pathname = usePathname();
-
+  console.log(userRole);
   // Navigation items based on user role
   const getNavItems = (role: UserRole) => {
     switch (role) {
@@ -95,37 +95,37 @@ export function AalemniSidebar({
             href: "/student/settings",
           },
         ];
-      case "trainer":
+      case "instructor":
         return [
           {
             title: "Dashboard",
             icon: LayoutDashboard,
-            href: "/trainer/dashboard",
+            href: "/instructor/dashboard",
           },
           {
             title: "My Courses",
             icon: BookOpen,
-            href: "/trainer/courses",
+            href: "/instructor/courses",
           },
           {
             title: "Student Management",
             icon: Users,
-            href: "/trainer/students",
+            href: "/instructor/students",
           },
           {
             title: "Earnings",
             icon: CreditCard,
-            href: "/trainer/earnings",
+            href: "/instructor/earnings",
           },
           {
             title: "Reviews",
             icon: Star,
-            href: "/trainer/reviews",
+            href: "/instructor/reviews",
           },
           {
             title: "Settings",
             icon: Settings,
-            href: "/trainer/settings",
+            href: "/instructor/settings",
           },
         ];
       case "admin":
@@ -183,8 +183,8 @@ export function AalemniSidebar({
     switch (role) {
       case "student":
         return "Student";
-      case "trainer":
-        return "Trainer";
+      case "instructor":
+        return "Instructor";
       case "admin":
         return "Administrator";
       default:

@@ -22,8 +22,9 @@ export function Layout({ children }: LayoutProps) {
   // Determine user role based on URL path
   const getUserRole = () => {
     if (!pathname) return "student";
+    // if (pathname.startsWith("/student")) return "student";
     if (pathname.startsWith("/admin")) return "admin";
-    if (pathname.startsWith("/trainer")) return "trainer";
+    if (pathname.startsWith("/instructor")) return "instructor";
     return "student";
   };
 
