@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, Star, ChevronDown, Grid3X3, List } from "lucide-react";
@@ -20,8 +21,33 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/uii_/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { Course_courses } from "@/types/types";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function CoursesPage() {
+type CoursesPageProps = {
+  courses: Course_courses[];
+};
+
+export default function CoursesPage({ courses }: CoursesPageProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (searchParams) {
+      const query = searchParams.get("q") || "";
+      setSearch(query);
+    }
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    router.push(`?q=${encodeURIComponent(search)}`);
+  };
+  
   return (
     <>
       {/* Hero Section */}
@@ -35,14 +61,18 @@ export default function CoursesPage() {
               Browse by category, level, or instructor to start learning today.
             </p>
             <div className="mt-8 flex items-center justify-center">
-              <div className="relative w-full max-w-2xl">
+              <form onSubmit={handleSearch} id="seach_form" className="relative w-full max-w-2xl">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search courses by title, trainer, or keyword..."
                   className="w-full pl-10"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearch(value);
+                  }}
                 />
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -207,7 +237,10 @@ export default function CoursesPage() {
                 <div>
                   <h2 className="text-2xl font-bold">All Courses</h2>
                   <p className="text-sm text-muted-foreground">
-                    Showing 1-12 of 42 courses
+                    Showing{" "}
+                    {courses.length == 1
+                      ? "1 Course"
+                      : `${courses.length} Courses`}
                   </p>
                 </div>
                 <div className="flex w-full items-center gap-4 sm:w-auto">
@@ -215,10 +248,6 @@ export default function CoursesPage() {
                     <Button variant="outline" size="icon" className="h-8 w-8">
                       <Grid3X3 className="h-4 w-4" />
                       <span className="sr-only">Grid view</span>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <List className="h-4 w-4" />
-                      <span className="sr-only">List view</span>
                     </Button>
                   </div>
                   <Select defaultValue="popularity">
@@ -240,7 +269,7 @@ export default function CoursesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {Array(12)
                   .fill(null)
                   .map((_, i) => (
@@ -335,6 +364,66 @@ export default function CoursesPage() {
                       </Card>
                     </Link>
                   ))}
+              </div> */}
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {courses.map((course) => (
+                  <Link
+                    key={course.courseid}
+                    href={`/courses/${course.courseid}`}
+                  >
+                    <Card className="h-full overflow-hidden transition-all hover:shadow-md">
+                      <div className="aspect-video relative">
+                        <Image
+                          src={
+                            course.previewimage ||
+                            "/placeholder.svg?height=200&width=360&text=No+Image"
+                          }
+                          alt={course.title}
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute right-2 top-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-background/80 backdrop-blur-sm"
+                          >
+                            Bestseller{" "}
+                            {/* or something dynamic later if you add a field for it */}
+                          </Badge>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">
+                            {course.category.categoryname}
+                            {/* or replace with a `category` if you have one */}
+                          </Badge>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Star className="h-4 w-4 fill-primary text-primary" />
+                            <span>4.8</span>{" "}
+                            {/* Replace with a real rating if available */}
+                          </div>
+                        </div>
+                        <h3 className="mt-2 font-semibold">{course.title}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {course.overview}
+                        </p>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/20" />
+                            <span className="text-xs">
+                              {course.instructor.fullname}
+                            </span>
+                          </div>
+                          <span className="font-semibold">
+                            {course.price === 0 ? "Free" : `$${course.price}`}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
               </div>
 
               <div className="mt-8 flex justify-center">

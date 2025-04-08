@@ -24,12 +24,18 @@ import { Button } from "@/components/uii_/button";
 import { Badge } from "@/components/uii_/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "../layout/footer";
+import { User } from "@supabase/supabase-js"; // Import User type
 
-export default function HomePage() {
+interface HomeProps {
+  user: User | null; // user can be null if not logged in
+}
+
+export default function HomePage({ user }: HomeProps) {
   return (
     <>
       {/* Hero Section */}
-      <Navbar />
+      <Navbar user={user} />
       <section className="relative overflow-hidden bg-gradient-to-b from-aalemni-navy/10 via-background to-background pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
         <div className="container relative z-10">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8">
@@ -135,10 +141,10 @@ export default function HomePage() {
         <div className="container">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {[
-              { value: "X,XXX+", label: "Active Learners" },
-              { value: "X,XXX+", label: "Expert Instructors" },
-              { value: "X,XXX+", label: "Courses Available" },
-              { value: "XXM+", label: "Learning Hours" },
+              { value: "2000+", label: "Active Learners" },
+              { value: "50+", label: "Expert Instructors" },
+              { value: "3000+", label: "Courses Available" },
+              { value: "532+", label: "Learning Hours" },
             ].map((stat, i) => (
               <div
                 key={i}
@@ -622,110 +628,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-background">
-        <div className="container py-12 md:py-16">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center gap-2">
-                <GraduationCap className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">Aalemni</span>
-              </Link>
-              <p className="mt-4 text-sm text-muted-foreground max-w-md">
-                Aalemni is a comprehensive e-learning platform connecting
-                students with expert trainers. Our mission is to make quality
-                education accessible to everyone, everywhere.
-              </p>
-              <div className="mt-6 flex gap-4">
-                {[
-                  "facebook",
-                  "twitter",
-                  "instagram",
-                  "linkedin",
-                  "youtube",
-                ].map((social) => (
-                  <Link
-                    key={social}
-                    href={`#${social}`}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground"
-                  >
-                    <span className="sr-only">{social}</span>
-                    {/* Placeholder for social icons */}
-                    <div className="h-4 w-4" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium">Quick Links</h3>
-              <ul className="mt-4 space-y-2 text-sm">
-                {[
-                  { title: "Home", href: "/" },
-                  { title: "Courses", href: "/courses" },
-                  { title: "Instructors", href: "/instructors" },
-                  { title: "Become a Trainer", href: "/become-instructor" },
-                  { title: "Partners", href: "/partners" },
-                ].map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium">About Us</h3>
-              <ul className="mt-4 space-y-2 text-sm">
-                {[
-                  { title: "Our Story", href: "/about" },
-                  { title: "Team", href: "/team" },
-                  { title: "Careers", href: "/careers" },
-                  { title: "Press", href: "/press" },
-                  { title: "Blog", href: "/blog" },
-                ].map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium">Support</h3>
-              <ul className="mt-4 space-y-2 text-sm">
-                {[
-                  { title: "Help Center", href: "/help" },
-                  { title: "Contact Us", href: "/contact" },
-                  { title: "Privacy Policy", href: "/privacy" },
-                  { title: "Terms of Service", href: "/terms" },
-                  { title: "Cookie Policy", href: "/cookies" },
-                ].map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 border-t pt-6 text-center text-sm text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} Aalemni. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

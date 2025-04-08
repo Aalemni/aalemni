@@ -47,14 +47,6 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/blog"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/contact"
                   className="text-muted-foreground hover:text-foreground"
                 >
@@ -84,10 +76,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/cookies"
+                  href="/team"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Cookie Policy
+                  Our Team
                 </Link>
               </li>
             </ul>
@@ -97,23 +89,17 @@ export function Footer() {
             <ul className="mt-4 space-y-2 text-sm">
               <li>
                 <a
-                  href="#"
+                  href="mailto:aalemni@gmail.com"
+                  target="_blank"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Facebook
+                  aalemni@gmail.com
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
+                  href="https://www.instagram.com/aalemniapp/?utm_source=ig_web_button_share_sheet"
+                  target="_blank"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   Instagram
@@ -121,18 +107,11 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/company/aalemni"
+                  target="_blank"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   LinkedIn
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  YouTube
                 </a>
               </li>
             </ul>

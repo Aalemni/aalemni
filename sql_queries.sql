@@ -204,6 +204,13 @@ CREATE TABLE courses (
     previewImage TEXT
 );
 
+ALTER TABLE courses
+ADD COLUMN categoryid UUID,
+ADD CONSTRAINT courses_categoryid_fkey
+FOREIGN KEY (categoryid)
+REFERENCES categories(categoryid)
+ON DELETE SET NULL;
+
 ---- FEATURED COURSES TABLE ----
 CREATE TABLE featured_courses (
     featured_coursesID UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -471,412 +478,204 @@ ALTER TABLE user_enrolled ENABLE ROW LEVEL SECURITY;
 ---- COMPANY INFO ---- 
 CREATE POLICY "Everyone can see company_info"
 ON "public"."company_info"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on company_info"
-ON "public"."company_info"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 ---- COUNTRIES ---- 
 CREATE POLICY "Everyone can see countries"
 ON "public"."countries"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on countries"
-ON "public"."countries"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- CITIES ---- 
 CREATE POLICY "Everyone can see cities"
 ON "public"."cities"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on cities"
-ON "public"."cities"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 
 ---- MENU LINKS ----- 
 CREATE POLICY "Everyone can see menu_links"
 ON "public"."menu_links"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on menu_links"
-ON "public"."menu_links"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- PARTNERSHIP FEATURES ---- 
 CREATE POLICY "Everyone can see partnership_features"
 ON "public"."partnership_features"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on partnership_features"
-ON "public"."partnership_features"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 
 ---- COMPANY FEATUERS ---- 
 CREATE POLICY "Everyone can see company_features"
 ON "public"."company_features"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on company_features"
-ON "public"."company_features"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- PARTNERSHIP TYPE ---- 
 CREATE POLICY "Everyone can see partnership_type"
 ON "public"."partnership_type"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
-CREATE POLICY "Admin has full acess on partnership_type"
-ON "public"."partnership_type"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- PARTNERS ----- 
 CREATE POLICY "Everyone can see partners"
 ON "public"."partners"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
 CREATE POLICY "Everyone can apply to become partners"
 ON "public"."partners"
-FOR INSERT
+FOR INSERT TO public
 WITH CHECK (true);
-CREATE POLICY "Admin has full acess on partners"
-ON "public"."partners"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- PARTNERS TESTIMONIALS ----
 CREATE POLICY "Everyone can see partners' testimonials"
 ON "public"."partners_testimonials"
-FOR SELECT
+FOR SELECT TO public
 USING (true);
+
 CREATE POLICY "Only partners can add testimonials"
 ON "public"."partners_testimonials"
-FOR INSERT
-WITH CHECK ((auth.role() = 'authenticated') AND (EXISTS (
-    SELECT 1 FROM public.partners WHERE partners.partnerID = auth.uid()
-)));
+FOR INSERT TO authenticated
+WITH CHECK (EXISTS (
+    SELECT 1 FROM public.partners WHERE partners.partnerid = auth.uid()
+));
+
 CREATE POLICY "Partners can edit or delete their own testimonials"
-ON "public"."partners_testimonials"
-FOR ALL USING ( (auth.role() = 'authenticated') AND (auth.uid() = partnerID));
-CREATE POLICY "Admin has full access to partners_testimonials"
-ON "public"."partners_testimonials"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+  ON "public"."partners_testimonials"
+  FOR ALL TO authenticated 
+  USING (auth.uid() = partnerid)
+  WITH CHECK (auth.uid() = partnerid);
+
 
 ---- TESTIMONIALS ----
 CREATE POLICY "Everyone can see testimonials"
 ON "public"."testimonials"
-FOR SELECT
+FOR SELECT To public
 USING (true);
 CREATE POLICY "Everyone can add testimonials"
 ON "public"."testimonials"
-FOR INSERT
+FOR INSERT TO public
 WITH CHECK (true);
-CREATE POLICY "Admin has full access to testimonials"
-ON "public"."testimonials"
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 
 ---- USERS ----
+CREATE POLICY "Everyone can register"
+ON "public"."users"
+FOR INSERT To public
+WITH CHECK (true);
+
 CREATE POLICY "Users can see their own data"
 ON users
-FOR SELECT
-USING ((auth.role() = 'authenticated') AND (auth.uid() = userID));
-CREATE POLICY "Admins can manage users"
-ON users
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+FOR SELECT To authenticated
+  USING (userid = auth.uid());
 
-ALTER POLICY "Admins can manage users"
-ON "public"."users"
-TO public
-USING (
-  auth.role() = 'authenticated'::text 
-  AND auth.uid() IS NOT NULL
-  AND EXISTS (
-    SELECT 1 FROM users users_1
-    WHERE auth.uid() = users_1.userid 
-    AND users_1.role = 'admin'::text
-  )
-)
-WITH CHECK (true);
+CREATE POLICY "Users can edit their own data"
+ON users
+FOR UPDATE To authenticated
+  USING (userid = auth.uid())
+  WITH CHECK (userid = auth.uid());
 
 
 ---- SUBSCRIPTIONS ----
 CREATE POLICY "Allow users to insert their subscriptions"
 ON subscriptions
-FOR INSERT
-WITH CHECK ((auth.role() = 'authenticated') AND (auth.uid() = userID));
+FOR INSERT To authenticated
+WITH CHECK (userid = auth.uid());
 CREATE POLICY "Allow users to view their own subscriptions"
 ON subscriptions
-FOR SELECT
-USING ((auth.role() = 'authenticated') AND (auth.uid() = userID));
+FOR SELECT To authenticated
+USING (userid = auth.uid());
 CREATE POLICY "Prevent users from deleting subscriptions they don’t own"
 ON subscriptions
-FOR DELETE
-USING ((auth.role() = 'authenticated') AND (auth.uid() = userID));
-CREATE POLICY "Admins can manage all subscriptions"
-ON subscriptions
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
+FOR DELETE To authenticated
+USING (userid = auth.uid());
 
 
 ---- SUBSICRIPTIONS PLANS ----
 CREATE POLICY "Allow everyone to view subscription plans"
 ON subscription_plans
-FOR SELECT
+FOR SELECT To public
 USING (true);
-CREATE POLICY "Admins can manage all subscription plans"
-ON subscription_plans
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- INSTRUCTOR REVIEW ----
 CREATE POLICY "Authenticated users can view instructor reviews"
 ON instructor_reviews
-FOR SELECT
-USING ((auth.role() IS NOT NULL) AND (auth.role() = 'authenticated'));
-CREATE POLICY "Admins can manage instructor reviews"
-ON instructor_reviews
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+FOR SELECT To authenticated
+USING (true);
 
 
 ---- INSTRUCTOR DETAIS ----
 CREATE POLICY "Authenticated users can view instructor details"
 ON instructor_details
-FOR SELECT
-USING ((auth.role() IS NOT NULL) AND (auth.role() = 'authenticated'));
+FOR SELECT To authenticated
+USING (true);
+
 CREATE POLICY "Instructors can edit their own details"
 ON instructor_details
-FOR UPDATE
+FOR UPDATE TO authenticated
 USING (
-  auth.role() = 'authenticated'
-  AND EXISTS (
+  EXISTS (
     SELECT 1 FROM users 
     WHERE auth.uid() = userID 
     AND role = 'instructor'
   )
-  AND instructorID = auth.uid()
+  AND instructorid = auth.uid()
 );
-CREATE POLICY "Admins can manage instructor details"
-ON instructor_details
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 ---- PAYMENT PROVIDERS ----
 CREATE POLICY "Authenticated users can view payment providers"
 ON payment_providers
-FOR SELECT
-USING ((auth.role() IS NOT NULL) AND (auth.role() = 'authenticated'));
-CREATE POLICY "Admins can manage payment providers"
-ON payment_providers
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
+FOR SELECT To authenticated
+USING (true);
 
 
 ---- TRANSACTIONS ----
 CREATE POLICY "Users can view their own transactions"
 ON user_transactions
-FOR SELECT
-USING ((auth.uid() = userID) AND (auth.role() = 'authenticated'));
-CREATE POLICY "Admins can manage user transactions"
-ON user_transactions
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
+FOR SELECT To authenticated
+USING (userid = auth.uid());
 
 
 ---- INSTRUCTOR TESTIMONIALS ----
 CREATE POLICY "Everyone can view instructor testimonials"
 ON instructor_testimonials
-FOR SELECT
+FOR SELECT To public
 USING (true);
+
 CREATE POLICY "Instructors can add testimonials"
 ON instructor_testimonials
-FOR INSERT
-WITH CHECK (auth.role() = 'authenticated' AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'instructor'));
+FOR INSERT To authenticated
+WITH CHECK (EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'instructor'));
 
 
 
 ---- COURSES ----
-CREATE POLICY "Everyone can view courses"
-ON courses
-FOR SELECT
-USING (true);
-CREATE POLICY "Instructors can manage their own courses"
-ON courses
-FOR ALL
-USING (auth.uid() = instructorID AND auth.role() = 'authenticated')
-WITH CHECK (auth.uid() = instructorID AND auth.role() = 'authenticated');
-CREATE POLICY "Admins can manage everything in courses"
-ON courses
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+CREATE POLICY "Allow read access for all guests" ON courses
+  FOR SELECT TO public
+  USING (true);
 
-
+CREATE POLICY "Allow instructors to manage their own courses" ON courses
+  FOR ALL TO authenticated
+  USING (instructorid = auth.uid())
+  WITH CHECK (instructorid = auth.uid());
 
 ---- MODULE ----
 CREATE POLICY "Everyone can view modules"
 ON module
-FOR SELECT
+FOR SELECT To public
 USING (true);
+
 CREATE POLICY "Instructors can manage their own modules"
 ON module
 FOR ALL
@@ -894,134 +693,63 @@ WITH CHECK (
         AND auth.uid() = courses.instructorID
     )
 );
-CREATE POLICY "Admins can manage everything in modules"
-ON module
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
-
 
 ---- COURSE LEVEL ----
 CREATE POLICY "Everyone can view course levels"
 ON course_levels
-FOR SELECT
+FOR SELECT To public
 USING (true);
-CREATE POLICY "Admins can manage everything in course levels"
-ON course_levels
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 ---- CAREGORIES ----
 CREATE POLICY "Everyone can view categories"
 ON categories
-FOR SELECT
+FOR SELECT To public
 USING (true);
-CREATE POLICY "Admins can manage everything in categories"
-ON categories
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- COURSE CATEGORIES ----
 CREATE POLICY "Instructors can manage their own course course_categories"
 ON course_categories
-FOR ALL
+FOR ALL To authenticated
 USING (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM courses WHERE courses.courseID = course_categories.courseID 
         AND auth.uid() = courses.instructorID
     )
 )
 WITH CHECK (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM courses WHERE courses.courseID = course_categories.courseID 
         AND auth.uid() = courses.instructorID
     )
 );
-CREATE POLICY "Admins can manage everything in course categories"
-ON course_categories
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+
 
 ---- FEATURED COURSES ----
 CREATE POLICY "Everyone can view featured courses"
 ON featured_courses
-FOR SELECT
+FOR SELECT To public
 USING (true);
-CREATE POLICY "Admins can manage everything in featured courses"
-ON featured_courses
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 ---- TAGS ----
 CREATE POLICY "Everyone can view tags"
 ON tags
-FOR SELECT
+FOR SELECT To public
 USING (true);
-CREATE POLICY "Admins can manage everything in tags"
-ON tags
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- LESSONS ----
 CREATE POLICY "Authenticated users can view lessons"
 ON lesson
-FOR SELECT
-USING ((auth.role() IS NOT NULL) AND (auth.role() = 'authenticated'));
+FOR SELECT To authenticated
+USING (true);
+
 CREATE POLICY "Instructors can manage their own lessons"
 ON lesson
-FOR ALL
+FOR ALL To authenticated
 USING (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM module WHERE module.moduleID = lesson.moduleID 
         AND EXISTS (
@@ -1031,7 +759,6 @@ USING (
     )
 )
 WITH CHECK (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM module WHERE module.moduleID = lesson.moduleID 
         AND EXISTS (
@@ -1039,30 +766,19 @@ WITH CHECK (
             AND auth.uid() = courses.instructorID
         )
     )
-);
-CREATE POLICY "Admins can manage everything in lessons"
-ON lesson
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
 );
 
 
 ---- PAGES ----
 CREATE POLICY "Authenticated users can view pages"
 ON page
-FOR SELECT
-USING ((auth.role() IS NOT NULL) AND (auth.role() = 'authenticated'));
+FOR SELECT To authenticated
+USING (true);
+
 CREATE POLICY "Instructors can manage their own pages"
 ON page
-FOR ALL
+FOR ALL To authenticated
 USING (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM lesson WHERE lesson.lessonID = page.lessonID 
         AND EXISTS (
@@ -1075,7 +791,6 @@ USING (
     )
 )
 WITH CHECK (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM lesson WHERE lesson.lessonID = page.lessonID 
         AND EXISTS (
@@ -1086,61 +801,35 @@ WITH CHECK (
             )
         )
     )
-);
-CREATE POLICY "Admins can manage everything in pages"
-ON page
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
 );
 
 
 ---- COURSE TAGS ----
 CREATE POLICY "Instructors can manage their own course course_tags"
 ON course_tags
-FOR ALL
+FOR ALL To authenticated
 USING (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM courses WHERE courses.courseID = course_tags.courseID 
         AND auth.uid() = courses.instructorID
     )
 )
 WITH CHECK (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM courses WHERE courses.courseID = course_tags.courseID 
         AND auth.uid() = courses.instructorID
     )
 );
-CREATE POLICY "Admins can manage everything in course tags"
-ON course_tags
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 
 ---- COMMUNITY ----
 CREATE POLICY "Authenticated can view general communities"
-ON community FOR SELECT
-USING (auth.role() IS NOT NULL AND auth.role() = 'authenticated' AND type = 'general');
+ON community FOR SELECT To authenticated
+USING (auth.role() IS NOT NULL AND type = 'general');
 
 CREATE POLICY "Enrolled users can view course-specific communities"
-ON community FOR SELECT
+ON community FOR SELECT To authenticated
 USING (
-    (auth.role() = 'authenticated') AND 
     (type = 'general'  
     OR (type = 'course' AND EXISTS (
         SELECT 1 FROM user_enrolled ue 
@@ -1148,34 +837,22 @@ USING (
         AND ue.courseID = community.courseID
     )))
 );
-CREATE POLICY "Admins can manage everything in community"
-ON community
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+
 
 ---- QUESTIONS ----
 CREATE POLICY "Authenticated can see questions in general communities"
-ON questions FOR SELECT
+ON questions FOR SELECT To authenticated
 USING (
-    auth.role() = 'authenticated' 
-    AND EXISTS (
+    EXISTS (
         SELECT 1 FROM community c 
         WHERE c.communityID = questions.communityID 
         AND c.type = 'general'
     )
 );
 CREATE POLICY "Enrolled users can see questions in course communities"
-ON questions FOR SELECT
+ON questions FOR SELECT To authenticated
 USING (
-    auth.role() = 'authenticated' 
-    AND EXISTS (
+    EXISTS (
         SELECT 1 FROM community c 
         JOIN user_enrolled ue ON c.courseID = ue.courseID
         WHERE c.communityID = questions.communityID 
@@ -1183,38 +860,32 @@ USING (
         AND ue.userID = auth.uid()
     )
 );
+
 CREATE POLICY "Users can add questions"
-ON questions FOR INSERT
-WITH CHECK (auth.uid() = userID AND auth.role() = 'authenticated');
+ON questions FOR INSERT To authenticated
+WITH CHECK (auth.uid() = userID);
+
 CREATE POLICY "Users can edit their own questions"
-ON questions FOR UPDATE USING (auth.uid() = userID AND auth.role() = 'authenticated');
+ON questions FOR UPDATE To authenticated USING (auth.uid() = userID);
+
 CREATE POLICY "Users can delete their own questions"
-ON questions FOR DELETE USING (auth.uid() = userID AND auth.role() = 'authenticated');
-CREATE POLICY "Admins can manage everything in questions"
-ON questions
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+ON questions FOR DELETE To authenticated USING (auth.uid() = userID);
+
 
 ---- REPLIES ----
 CREATE POLICY "Authenticated can see replies in general communities"
-ON replies FOR SELECT
+ON replies FOR SELECT To authenticated
 USING (
     EXISTS (
         SELECT 1 FROM community c 
         JOIN questions q ON c.communityID = q.communityID
         WHERE q.questionID = replies.questionID 
         AND c.type = 'general'
-    ) AND auth.role() = 'authenticated'
+    )
 );
+
 CREATE POLICY "Enrolled users can see replies in course communities"
-ON replies FOR SELECT
+ON replies FOR SELECT To authenticated
 USING (
     EXISTS (
         SELECT 1 FROM community c 
@@ -1222,115 +893,73 @@ USING (
         JOIN user_enrolled ue ON c.courseID = ue.courseID
         WHERE q.questionID = replies.questionID
         AND ue.userID = auth.uid()
-    ) AND auth.role() = 'authenticated'
+    )
 );
+
 CREATE POLICY "Users can add replies"
-ON replies FOR INSERT
-WITH CHECK (auth.uid() = userID AND auth.role() = 'authenticated');
+ON replies FOR INSERT To authenticated
+WITH CHECK (auth.uid() = userID);
+
 CREATE POLICY "Users can edit their own replies"
-ON replies FOR UPDATE USING (auth.uid() = userID AND auth.role() = 'authenticated');
+ON replies FOR UPDATE TO authenticated USING (auth.uid() = userID);
+
 CREATE POLICY "Users can delete their own replies"
-ON replies FOR DELETE USING (auth.uid() = userID AND auth.role() = 'authenticated');
-CREATE POLICY "Admins can manage everything in replies"
-ON replies
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+ON replies FOR DELETE To authenticated USING (auth.uid() = userID);
 
 ---- WHISHLIST ----
 CREATE POLICY "Users can see their own wishlist"
-ON course_wishlist FOR SELECT
-USING (auth.uid() = userID AND auth.role() = 'authenticated');
+ON course_wishlist FOR SELECT To authenticated
+USING (auth.uid() = userID);
 
 CREATE POLICY "Users can modify their own wishlist"
-ON course_wishlist FOR UPDATE
-USING (auth.uid() = userID AND auth.role() = 'authenticated');
-CREATE POLICY "Admins can manage everything in whishlist"
-ON course_wishlist
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
+ON course_wishlist FOR UPDATE To authenticated
+USING (auth.uid() = userID);
 
--- Certificates table -- 
+-- CERTIFICATES  -- 
 CREATE POLICY "User can see their own certificates"
-ON certificates FOR SELECT
-USING (auth.uid() = userID AND auth.role() = 'authenticated');
+ON certificates FOR SELECT To authenticated
+USING (auth.uid() = userID);
+
 CREATE POLICY "Instructor can see certificates for their courses"
-ON certificates FOR SELECT
+ON certificates FOR SELECT To authenticated
 USING (
-    auth.role() = 'authenticated' AND 
     EXISTS (
         SELECT 1 FROM courses 
         WHERE courses.courseID = certificates.courseID 
         AND courses.instructorID = auth.uid()
     )
 );
-CREATE POLICY "Admins can manage everything in certificates"
-ON certificates
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
 
 
 ---- USERS ENROLLED ----
 CREATE POLICY "Instructor can see enrolled users in their courses"
-ON user_enrolled FOR SELECT
+ON user_enrolled FOR SELECT TO authenticated
 USING (
-    auth.role() = 'authenticated'  AND 
     EXISTS (
         SELECT 1 FROM courses 
         WHERE courses.courseID = user_enrolled.courseID 
         AND courses.instructorID = auth.uid()
     )
 );
-CREATE POLICY "Admins can manage everything in user_enrolled"
-ON user_enrolled
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 
 ---- COURSE REVIEWS ----
 CREATE POLICY "Everyone can see course reviews"
-ON course_reviews FOR SELECT USING (TRUE);
+ON course_reviews FOR SELECT To public USING (true);
+
 CREATE POLICY "Authenticated and enrolled users can add reviews"
-ON course_reviews FOR INSERT
+ON course_reviews FOR INSERT To authenticated
 WITH CHECK (
-    auth.role() = 'authenticated' AND
     EXISTS (
         SELECT 1 FROM user_enrolled ue 
         WHERE ue.userID = auth.uid() 
         AND ue.courseID = course_reviews.courseID
     )
 );
+
 CREATE POLICY "Users can edit their own reviews"
-ON course_reviews FOR UPDATE USING (auth.uid() = userID AND auth.role() = 'authenticated' );
+ON course_reviews FOR UPDATE To authenticated USING (auth.uid() = userID);
 CREATE POLICY "Users can delete their own reviews"
-ON course_reviews FOR DELETE USING (auth.uid() = userID AND auth.role() = 'authenticated' );
+ON course_reviews FOR DELETE To authenticated USING (auth.uid() = userID );
 CREATE POLICY "Instructor has full access on reviews for their course reviews"
 ON course_reviews FOR ALL
 USING (
@@ -1341,16 +970,4 @@ USING (
         AND courses.instructorID = auth.uid()
     )
 );
-CREATE POLICY "Admins can manage everything in course_reviews"
-ON course_reviews
-FOR ALL
-USING (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-)
-WITH CHECK (
-  auth.role() = 'authenticated' 
-  AND EXISTS (SELECT 1 FROM users WHERE auth.uid() = userID AND role = 'admin')
-);
-
 -- ============================================================ --

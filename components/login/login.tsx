@@ -33,25 +33,28 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
     try {
-      //   await new Promise((resolve) => setTimeout(resolve, 1500));
-      //   // In a real app, you would handle authentication here
       console.log("ss");
       const from_data = new FormData();
       from_data.append("email", formData.email);
       from_data.append("password", formData.password);
       const result = await signInAction(from_data);
-      console.log(result);
       if (result && result.success == false) {
         toast.error(result.message);
       } else if (result && result.success == true) {
         toast.success(result.message);
+        if (result.role) {
+          if (result.role == "instructor") {
+            router.push("/instructor/dashboard");
+          } else {
+            router.push("/student/dashboard");
+          }
+        } else {
+          router.push("/");
+        }
       } else {
         toast.error("An Error Ocured, No Info About It");
       }
-      // i should return type of user to see his role and redirect it
-      //   router.push("/student/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {

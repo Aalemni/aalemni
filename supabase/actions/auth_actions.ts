@@ -155,12 +155,12 @@ export const signInAction = async (formData: FormData) => {
   const { data: userData, error: userError } = await supabase
     .from("users")
     .select("role")
-    .eq("id", userId)
+    .eq("userid", userId)
     .single();
 
   if (userError || !userData) {
     return {
-      message: "Failed to retrieve user role.",
+      message: userError.message,
       success: false,
     };
   }

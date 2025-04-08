@@ -1,18 +1,7 @@
 "use server";
 
 import { createClient } from "@/supabase/utils/server";
-
-type CoursePayload = {
-  title: string;
-  name: string;
-  overview: string;
-  description: string;
-  levelId: string;
-  keyTopics: string[];
-  previewImage?: string | null;
-  resources: string[];
-  price: number;
-};
+import { Course_courses, CoursePayload } from "@/types/types";
 
 const validateCourseData = (data: Partial<CoursePayload>) => {
   const requiredFields = [
@@ -82,19 +71,43 @@ export const createCourse = async (formData: FormData) => {
   return { success: true, message: "Course created successfully" };
 };
 
-export const getAllCourses = async () => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("courses").select("*, users(*)"); // ba3d fi mshkel hon (multiple relation found between users and courses)
+type GetAllCoursesResponse = {
+  success: boolean;
+  message: string;
+  data: Course_courses[];
+};
 
-  if (error) {
-    return {
-      success: false,
-      message: `Failed to fetch courses: ${error.message}`,
-      data: [],
-    };
+export const getAllCourses = async (
+  query = "",
+  category = ""
+): Promise<GetAllCoursesResponse> => {
+  console.log(query, category);
+  const supabase = await createClient();
+
+  // Start with the basic query
+  let queryBuilder = supabase
+    .from("courses")
+    .select("*, instructor:instructorid(*), category:categoryid(*)")
+    .ilike("title", `%${query}%`); // Filter by title if there's a query
+
+  // Add a filter for category if a category is provided
+  if (category) {
+    queryBuilder = queryBuilder.eq("categoryid", category);
   }
 
-  return { success: true, message: "Courses fetched successfully", data };
+  // Execute the query
+  const { data, error } = await queryBuilder;
+
+  // Handle the error and return the result
+  if (error) {
+    return { success: false, message: error.message, data: [] };
+  }
+
+  return {
+    success: true,
+    message: "Courses retrieved successfully",
+    data: data || [],
+  };
 };
 
 export const getCoursesByCategories = async (

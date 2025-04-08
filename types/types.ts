@@ -176,3 +176,49 @@ export type Course_2 = {
     }[];
   };
 };
+
+export type CoursePayload = {
+  title: string;
+  name: string;
+  overview: string;
+  description: string;
+  levelId: string;
+  keyTopics: string[];
+  previewImage?: string | null;
+  resources: string[];
+  price: number;
+};
+
+export type Instructor_courses = {
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  phonenumber: string;
+  role: string;
+  status: string;
+};
+
+export type Category_courses = {
+  categoryid: string;
+  categoryname: string;
+  color: string;
+  icon: string;
+};
+
+export type Course_courses = {
+  courseid: string;
+  instructorid: string;
+  name: string;
+  title: string;
+  overview: string;
+  resources: string[] | null;
+  levelid: string;
+  createdat: string;
+  keytopics: string[] | null;
+  previewimage: string | null;
+  price: number;
+  instructor: Instructor_courses;
+  categoryid: number;
+  category: Category_courses;
+};
