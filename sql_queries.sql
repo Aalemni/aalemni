@@ -741,10 +741,9 @@ USING (true);
 
 
 ---- LESSONS ----
-CREATE POLICY "Authenticated users can view lessons"
-ON lesson
-FOR SELECT To authenticated
-USING (true);
+CREATE POLICY "Allow read access for all guests" ON lesson
+  FOR SELECT TO public
+  USING (true);
 
 CREATE POLICY "Instructors can manage their own lessons"
 ON lesson
@@ -770,10 +769,9 @@ WITH CHECK (
 
 
 ---- PAGES ----
-CREATE POLICY "Authenticated users can view pages"
-ON page
-FOR SELECT To authenticated
-USING (true);
+CREATE POLICY "Allow read access for all guests" ON page
+  FOR SELECT TO public
+  USING (true);
 
 CREATE POLICY "Instructors can manage their own pages"
 ON page

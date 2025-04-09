@@ -26,12 +26,64 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "../layout/footer";
 import { User } from "@supabase/supabase-js"; // Import User type
+import { Category_courses } from "@/types/types";
 
 interface HomeProps {
   user: User | null; // user can be null if not logged in
+  categories: Category_courses[];
 }
 
-export default function HomePage({ user }: HomeProps) {
+export default function HomePage({ user, categories }: HomeProps) {
+  const rr = [
+    {
+      icon: Code,
+      title: "Web Development",
+      color: "bg-aalemni-blue/10",
+      textColor: "text-aalemni-blue",
+      href: "/courses?category=web-development",
+    },
+    {
+      icon: LineChart,
+      title: "Business",
+      color: "bg-aalemni-orange/10",
+      textColor: "text-aalemni-orange",
+      href: "/courses?category=business",
+    },
+    {
+      icon: BarChart,
+      title: "Data Science",
+      color: "bg-aalemni-navy/10",
+      textColor: "text-aalemni-navy",
+      href: "/courses?category=data-science",
+    },
+    {
+      icon: Palette,
+      title: "Design",
+      color: "bg-aalemni-blue/10",
+      textColor: "text-aalemni-blue",
+      href: "/courses?category=design",
+    },
+    {
+      icon: Megaphone,
+      title: "Marketing",
+      color: "bg-aalemni-orange/10",
+      textColor: "text-aalemni-orange",
+      href: "/courses?category=marketing",
+    },
+    {
+      icon: Brain,
+      title: "Personal Development",
+      color: "bg-aalemni-navy/10",
+      textColor: "text-aalemni-navy",
+      href: "/courses?category=personal-development",
+    },
+  ];
+
+  const iconMap = {
+    Code: Code,
+    LineChart: LineChart,
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -182,61 +234,26 @@ export default function HomePage({ user }: HomeProps) {
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            {[
-              {
-                icon: Code,
-                title: "Web Development",
-                color: "bg-aalemni-blue/10",
-                textColor: "text-aalemni-blue",
-                href: "/courses?category=web-development",
-              },
-              {
-                icon: LineChart,
-                title: "Business",
-                color: "bg-aalemni-orange/10",
-                textColor: "text-aalemni-orange",
-                href: "/courses?category=business",
-              },
-              {
-                icon: BarChart,
-                title: "Data Science",
-                color: "bg-aalemni-navy/10",
-                textColor: "text-aalemni-navy",
-                href: "/courses?category=data-science",
-              },
-              {
-                icon: Palette,
-                title: "Design",
-                color: "bg-aalemni-blue/10",
-                textColor: "text-aalemni-blue",
-                href: "/courses?category=design",
-              },
-              {
-                icon: Megaphone,
-                title: "Marketing",
-                color: "bg-aalemni-orange/10",
-                textColor: "text-aalemni-orange",
-                href: "/courses?category=marketing",
-              },
-              {
-                icon: Brain,
-                title: "Personal Development",
-                color: "bg-aalemni-navy/10",
-                textColor: "text-aalemni-navy",
-                href: "/courses?category=personal-development",
-              },
-            ].map((category, i) => (
-              <Link key={i} href={category.href} className="group">
+            {categories.map((category, i) => (
+              <Link
+                key={i}
+                href={"/courses?category=" + category.categoryid}
+                className="group"
+              >
                 <div className="flex flex-col items-center rounded-lg p-6 text-center transition-all hover:bg-aalemni-light">
                   <div
                     className={`flex h-16 w-16 items-center justify-center rounded-full ${category.color}`}
                   >
-                    <category.icon
-                      className={`h-8 w-8 ${category.textColor}`}
-                    />
+                    {(() => {
+                      const IconComponent =
+                        iconMap[category.icon as keyof typeof iconMap];
+                      return IconComponent ? (
+                        <IconComponent className={`h-8 w-8 ${category.text_color}`} />
+                      ) : null;
+                    })()}
                   </div>
                   <h3 className="mt-4 font-semibold text-aalemni-navy">
-                    {category.title}
+                    {category.categoryname}
                   </h3>
                   <div className="mt-2 flex items-center text-sm text-muted-foreground">
                     <span className="transition-all group-hover:mr-2">

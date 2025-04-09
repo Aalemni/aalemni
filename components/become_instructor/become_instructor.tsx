@@ -906,7 +906,7 @@ export default function BecomeInstructorPage() {
       </section>
 
       {/* Resources Section */}
-      <section className="py-16 md:py-24">
+      {/*<section className="py-16 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -985,7 +985,7 @@ export default function BecomeInstructorPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section>*/}
 
       {/* Final CTA */}
       <section className="bg-muted py-16 md:py-24">

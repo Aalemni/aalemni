@@ -21,33 +21,156 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/uii_/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Course_courses } from "@/types/types";
+import { Category_courses, Course_courses, Level_courses } from "@/types/types";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type CoursesPageProps = {
   courses: Course_courses[];
+  categories: Category_courses[];
+  course_levels: Level_courses[];
 };
 
-export default function CoursesPage({ courses }: CoursesPageProps) {
+export default function CoursesPage({
+  courses,
+  categories,
+  course_levels,
+}: CoursesPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [isFreeChecked, setIsFreeChecked] = useState(false);
+  const [isNoPriceChecked, setIsNoPriceChecked] = useState(true);
+  const [priceRange, setPriceRange] = useState([0, 200]);
+  const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
 
   useEffect(() => {
     if (searchParams) {
       const query = searchParams.get("q") || "";
       setSearch(query);
     }
+    const categoriesFromURL = searchParams.get("category")?.split(",") || [];
+    setSelectedCategories(categoriesFromURL);
+
+    const levelsFromURL = searchParams.get("level")?.split(",") || [];
+    setSelectedLevels(levelsFromURL);
+
+    const minPrice = parseFloat(searchParams.get("minPrice") || "0");
+    const maxPrice = parseFloat(searchParams.get("maxPrice") || "200");
+    setPriceRange([minPrice, maxPrice]);
+
+    const durationsFromURL = searchParams.get("duration")?.split(",") || [];
+    setSelectedDurations(durationsFromURL);
   }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     router.push(`?q=${encodeURIComponent(search)}`);
   };
-  
+
+  const handleCategoryChange = (checked: boolean, categoryId: string) => {
+    setSelectedCategories((prevSelectedCategories) => {
+      let updatedCategories = [...prevSelectedCategories];
+
+      if (checked) {
+        if (!updatedCategories.includes(categoryId)) {
+          updatedCategories.push(categoryId);
+        }
+      } else {
+        updatedCategories = updatedCategories.filter((id) => id !== categoryId);
+      }
+
+      return updatedCategories;
+    });
+  };
+
+  const handleLevelChange = (checked: boolean, levelId: string) => {
+    setSelectedLevels((prevSelectedLevels) => {
+      let updatedLevels = [...prevSelectedLevels];
+
+      if (checked) {
+        if (!updatedLevels.includes(levelId)) {
+          updatedLevels.push(levelId);
+        }
+      } else {
+        updatedLevels = updatedLevels.filter((id) => id !== levelId);
+      }
+
+      return updatedLevels;
+    });
+  };
+
+  const handleDurationChange = (checked: boolean, duration: string) => {
+    setSelectedDurations((prevSelectedDurations) => {
+      let updatedDurations = [...prevSelectedDurations];
+
+      if (checked) {
+        if (!updatedDurations.includes(duration)) {
+          updatedDurations.push(duration);
+        }
+      } else {
+        updatedDurations = updatedDurations.filter((item) => item !== duration);
+      }
+
+      return updatedDurations;
+    });
+  };
+
+  const handleRangeChange = (value: number[]) => {
+    setPriceRange(value);
+  };
+
+  const handleFreeChange = (checked: boolean) => {
+    setIsFreeChecked(checked);
+    if (checked) {
+      setPriceRange([0, 0]);
+    } else {
+      setPriceRange([0, 200]);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (selectedCategories.length > 0) {
+      params.set("category", selectedCategories.join(","));
+    } else {
+      params.delete("category");
+    }
+
+    if (selectedLevels.length > 0) {
+      params.set("level", selectedLevels.join(","));
+    } else {
+      params.delete("level");
+    }
+
+    if (isNoPriceChecked) {
+    } else {
+      if (isFreeChecked) {
+        params.set("minPrice", "0");
+        params.set("maxPrice", "0");
+      } else {
+        params.set("minPrice", priceRange[0].toString());
+        params.set("maxPrice", priceRange[1].toString());
+      }
+    }
+
+    if (selectedDurations.length > 0) {
+      params.set("duration", selectedDurations.join(","));
+    } else {
+      params.delete("duration");
+    }
+
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleReset = () => {
+
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -61,7 +184,11 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
               Browse by category, level, or instructor to start learning today.
             </p>
             <div className="mt-8 flex items-center justify-center">
-              <form onSubmit={handleSearch} id="seach_form" className="relative w-full max-w-2xl">
+              <form
+                onSubmit={handleSearch}
+                id="seach_form"
+                className="relative w-full max-w-2xl"
+              >
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
@@ -87,7 +214,7 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
               <div className="sticky top-20 rounded-lg border bg-background p-6">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Filters</h2>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={handleReset}>
                     Reset
                   </Button>
                 </div>
@@ -97,27 +224,35 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
                     <AccordionTrigger>Category</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2">
-                        {[
-                          "Web Development",
-                          "Business",
-                          "Design",
-                          "Marketing",
-                          "Photography",
-                          "Music",
-                        ].map((category) => (
-                          <div
-                            key={category}
-                            className="flex items-center space-x-2"
-                          >
-                            <Checkbox id={`category-${category}`} />
-                            <label
-                              htmlFor={`category-${category}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        {categories.map((category) => {
+                          const isChecked = selectedCategories.includes(
+                            category.categoryid
+                          );
+
+                          return (
+                            <div
+                              key={category.categoryid}
+                              className="flex items-center space-x-2"
                             >
-                              {category}
-                            </label>
-                          </div>
-                        ))}
+                              <Checkbox
+                                id={`category-${category.categoryid}`}
+                                checked={isChecked}
+                                onCheckedChange={(checked) =>
+                                  handleCategoryChange(
+                                    checked === true,
+                                    category.categoryid
+                                  )
+                                }
+                              />
+                              <label
+                                htmlFor={`category-${category.categoryid}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                {category.categoryname}
+                              </label>
+                            </div>
+                          );
+                        })}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -125,18 +260,43 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
                     <AccordionTrigger>Price Range</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-4">
-                        <Slider defaultValue={[0, 100]} max={200} step={1} />
+                        <Slider
+                          defaultValue={priceRange}
+                          max={200}
+                          step={1}
+                          onValueChange={handleRangeChange}
+                          disabled={isFreeChecked}
+                        />
                         <div className="flex items-center justify-between">
-                          <span className="text-sm">$0</span>
-                          <span className="text-sm">$200+</span>
+                          <span className="text-sm">${priceRange[0]}</span>
+                          <span className="text-sm">${priceRange[1]}+</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Checkbox id="free-courses" />
+                          <Checkbox
+                            id="free-courses"
+                            checked={isFreeChecked}
+                            onCheckedChange={handleFreeChange}
+                          />
                           <label
                             htmlFor="free-courses"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             Free Courses
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="no-price-filter"
+                            checked={isNoPriceChecked}
+                            onCheckedChange={(checked) => {
+                              setIsNoPriceChecked(checked === true);
+                            }}
+                          />
+                          <label
+                            htmlFor="no-price-filter"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            No Price Filter
                           </label>
                         </div>
                       </div>
@@ -146,22 +306,34 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
                     <AccordionTrigger>Difficulty Level</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2">
-                        {["Beginner", "Intermediate", "Advanced"].map(
-                          (level) => (
+                        {course_levels.map((level) => {
+                          const isChecked = selectedLevels.includes(
+                            level.levelid
+                          );
+                          return (
                             <div
-                              key={level}
+                              key={level.levelid}
                               className="flex items-center space-x-2"
                             >
-                              <Checkbox id={`level-${level}`} />
+                              <Checkbox
+                                id={`level-${level.levelid}`}
+                                checked={isChecked}
+                                onCheckedChange={(checked) =>
+                                  handleLevelChange(
+                                    checked === true,
+                                    level.levelid
+                                  )
+                                }
+                              />
                               <label
-                                htmlFor={`level-${level}`}
+                                htmlFor={`level-${level.levelid}`}
                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
-                                {level}
+                                {level.name}
                               </label>
                             </div>
-                          )
-                        )}
+                          );
+                        })}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -170,21 +342,31 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
                     <AccordionContent>
                       <div className="space-y-2">
                         {[
-                          "0-2 hours",
-                          "3-6 hours",
-                          "7-16 hours",
-                          "17+ hours",
+                          { id: "0-4", text: "0-4 hours" },
+                          { id: "4-10", text: "4-10 hours" },
+                          { id: "10-20", text: "10-20 hours" },
+                          { id: "20-40", text: "20-40 hours" },
+                          { id: "40", text: "40+ hours" },
                         ].map((duration) => (
                           <div
-                            key={duration}
+                            key={duration.id}
                             className="flex items-center space-x-2"
                           >
-                            <Checkbox id={`duration-${duration}`} />
+                            <Checkbox
+                              id={`duration_${duration.id}`}
+                              checked={selectedDurations.includes(duration.id)}
+                              onCheckedChange={(checked) =>
+                                handleDurationChange(
+                                  checked === true,
+                                  duration.id
+                                )
+                              }
+                            />
                             <label
-                              htmlFor={`duration-${duration}`}
+                              htmlFor={`duration_${duration.id}`}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              {duration}
+                              {duration.text}
                             </label>
                           </div>
                         ))}
@@ -227,7 +409,9 @@ export default function CoursesPage({ courses }: CoursesPageProps) {
                   </AccordionItem>
                 </Accordion>
 
-                <Button className="mt-6 w-full">Apply Filters</Button>
+                <Button className="mt-6 w-full" onClick={handleApplyFilters}>
+                  Apply Filters
+                </Button>
               </div>
             </div>
 

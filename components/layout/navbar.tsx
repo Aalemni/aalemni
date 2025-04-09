@@ -17,13 +17,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useTranslation } from "@/contexts/translation-context";
 import { User } from "@supabase/supabase-js"; // Import User type
+import { signOutAction } from "@/supabase/actions/auth_actions";
 
 interface NavbarProps {
   user: User | null; // user can be null if not logged in
 }
 
 export function Navbar({ user }: NavbarProps) {
-  console.log(user);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { t, dir } = useTranslation();
@@ -84,6 +84,13 @@ export function Navbar({ user }: NavbarProps) {
       href: "/contact",
     },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      const result = await signOutAction();
+      console.log(result);
+    } catch (error) {}
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -149,6 +156,7 @@ export function Navbar({ user }: NavbarProps) {
                     onClick={() => {
                       console.log("logout");
                       setIsMenuOpen(false);
+                      handleSignOut();
                     }}
                     className="text-lg font-medium text-left"
                   >
@@ -229,6 +237,7 @@ export function Navbar({ user }: NavbarProps) {
             <Button
               onClick={() => {
                 console.log("logout");
+                handleSignOut();
               }}
               variant="ghost"
               className="bg-aalemni-orange hover:bg-aalemni-orange/90 text-white"

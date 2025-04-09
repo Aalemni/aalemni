@@ -2,6 +2,7 @@
 
 import { createClient } from "@/supabase/utils/server";
 import { Course_courses, CoursePayload } from "@/types/types";
+import { validate as isUuid } from "uuid";
 
 const validateCourseData = (data: Partial<CoursePayload>) => {
   const requiredFields = [
@@ -77,108 +78,291 @@ type GetAllCoursesResponse = {
   data: Course_courses[];
 };
 
-export const getAllCourses = async (
+type CourseDuration = {
+  courseid: string;
+  total_duration_minutes: number;
+};
+
+type CourseRating = {
+  courseid: string;
+  average_rating: number;
+};
+
+// export const getAllCourses = async (
+//   query = "",
+//   categories: string[] = [],
+//   minPrice: number = -1,
+//   maxPrice: number = -1,
+//   levels: string[] = [],
+//   duration: string[] = []
+// ): Promise<GetAllCoursesResponse> => {
+//   const validCategories = categories.filter((categoryId) => isUuid(categoryId));
+//   const validLevels = levels.filter((levelId) => isUuid(levelId));
+
+//   const supabase = await createClient();
+//   console.log(categories);
+
+//   let queryBuilder = supabase
+//     .from("courses")
+//     .select("*, instructor:instructorid(*), category:categoryid(*)")
+//     .ilike("title", `%${query}%`);
+
+//   if (validCategories.length > 0) {
+//     console.log("Filtering by categories:", validCategories);
+//     queryBuilder = queryBuilder.in("categoryid", validCategories);
+//   }
+
+//   if (validLevels.length > 0) {
+//     console.log("Filtering by levels:", validLevels);
+//     queryBuilder = queryBuilder.in("levelid", validLevels);
+//   }
+
+//   if (minPrice == -1 || maxPrice == -1) {
+//   } else {
+//     console.log("Filtering by price:", { minPrice, maxPrice });
+//     queryBuilder = queryBuilder.gte("price", minPrice).lte("price", maxPrice);
+//   }
+
+//   const { data, error } = await queryBuilder;
+
+//   if (error) {
+//     return { success: false, message: error.message, data: [] };
+//   }
+
+//   return {
+//     success: true,
+//     message: "Courses retrieved successfully",
+//     data: data || [],
+//   };
+// };
+
+export const getAllCourses_2 = async (
   query = "",
-  category = ""
+  categories: string[] = [],
+  minPrice: number = -1,
+  maxPrice: number = -1,
+  levels: string[] = [],
+  duration: string[] = [],
+  ratings: string[] = []
 ): Promise<GetAllCoursesResponse> => {
-  console.log(query, category);
   const supabase = await createClient();
 
-  // Start with the basic query
-  let queryBuilder = supabase
+  const validCategories = categories.filter((categoryId) => isUuid(categoryId));
+  const validLevels = levels.filter((levelId) => isUuid(levelId));
+
+  let courseQuery = supabase
     .from("courses")
     .select("*, instructor:instructorid(*), category:categoryid(*)")
-    .ilike("title", `%${query}%`); // Filter by title if there's a query
+    .ilike("title", `%${query}%`);
 
-  // Add a filter for category if a category is provided
-  if (category) {
-    queryBuilder = queryBuilder.eq("categoryid", category);
+  if (validCategories.length > 0) {
+    courseQuery = courseQuery.in("categoryid", validCategories);
   }
 
-  // Execute the query
-  const { data, error } = await queryBuilder;
-
-  // Handle the error and return the result
-  if (error) {
-    return { success: false, message: error.message, data: [] };
+  if (validLevels.length > 0) {
+    courseQuery = courseQuery.in("levelid", validLevels);
   }
+
+  if (minPrice !== -1 && maxPrice !== -1) {
+    courseQuery = courseQuery.gte("price", minPrice).lte("price", maxPrice);
+  }
+
+  const { data: courses, error: courseError } = await courseQuery;
+  if (courseError || !courses) {
+    return {
+      success: false,
+      message: courseError?.message || "Failed to fetch courses",
+      data: [],
+    };
+  }
+  console.log(courses);
+
+  const { data: durationsData, error: durationError } = await supabase.rpc(
+    "get_course_durations"
+  );
+
+  if (durationError || !durationsData) {
+    return {
+      success: false,
+      message: durationError?.message || "Failed to fetch course durations",
+      data: [],
+    };
+  }
+
+  const durationRangesInMinutes = duration.map((range) => {
+    const [minH, maxH] = range.split("-").map(Number);
+    return {
+      min: minH * 60,
+      max: maxH ? maxH * 60 : Infinity,
+    };
+  });
+
+  const filteredCourses = courses.filter((course) => {
+    const matchedDuration = durationsData.find(
+      (d: CourseDuration) => d.courseid === course.courseid
+    );
+
+    const totalMinutes = matchedDuration?.total_duration_minutes ?? 0;
+    if (totalMinutes === 0) return false;
+
+    if (durationRangesInMinutes.length === 0) return true;
+
+    return durationRangesInMinutes.some(
+      (range) => totalMinutes >= range.min && totalMinutes <= range.max
+    );
+  });
+
+  const { data: ratingsData, error: ratingsError } =
+    await supabase.rpc("get_course_ratings");
+
+  if (ratingsError || !ratingsData) {
+    return {
+      success: false,
+      message: ratingsError?.message || "Failed to fetch course ratings",
+      data: [],
+    };
+  }
+
+  const selectedRatings = ratings.map(Number);
+
+  const finalCourses = filteredCourses.filter((course) => {
+    const rating =
+      ratingsData.find((r: CourseRating) => r.courseid === course.courseid)
+        ?.average_rating ?? 0;
+
+    if (rating === 0) return false; // No reviews
+
+    if (selectedRatings.length === 0) return true;
+
+    return selectedRatings.includes(Number(rating.toFixed(1)));
+  });
 
   return {
     success: true,
     message: "Courses retrieved successfully",
-    data: data || [],
+    data: finalCourses,
   };
 };
 
-export const getCoursesByCategories = async (
-  categoryIds: string | string[]
-) => {
+export const getAllCourses = async (
+  query = "",
+  categories: string[] = [],
+  minPrice: number = -1,
+  maxPrice: number = -1,
+  levels: string[] = [],
+  duration: string[] = [],
+  ratings: string[] = []
+): Promise<GetAllCoursesResponse> => {
   const supabase = await createClient();
 
-  const searchCategoryIds = Array.isArray(categoryIds)
-    ? categoryIds
-    : categoryIds
-      ? [categoryIds]
-      : [];
+  const validCategories = categories.filter(isUuid);
+  const validLevels = levels.filter(isUuid);
 
-  // get all courses in case no filter on categories was done
-  if (searchCategoryIds.length === 0) {
-    const { data: allCourses, error } = await supabase
-      .from("courses")
-      .select("*");
-
-    if (error) {
-      return {
-        success: false,
-        message: `Error fetching all courses: ${error.message}`,
-      };
-    }
-
-    return {
-      success: true,
-      data: allCourses,
-    };
-  }
-
-  // get based on categories if there's a filter
-  const { data: courseCategoryMatches, error: fetchError } = await supabase
-    .from("course_categories")
-    .select("courseId")
-    .filter("categoryIds", "cs", `{${searchCategoryIds.join(",")}}`);
-
-  if (fetchError) {
-    return {
-      success: false,
-      message: `Error fetching course categories: ${fetchError.message}`,
-    };
-  }
-
-  const matchedCourseIds = courseCategoryMatches.map((row) => row.courseId);
-
-  if (matchedCourseIds.length === 0) {
-    return {
-      success: true,
-      data: [],
-      message: "No courses found for the provided category IDs.",
-    };
-  }
-
-  const { data: courses, error: coursesError } = await supabase
+  // 1. 🧠 Build course query
+  let courseQuery = supabase
     .from("courses")
-    .select("*")
-    .in("id", matchedCourseIds);
+    .select("*, instructor:instructorid(*), category:categoryid(*)")
+    .ilike("title", `%${query}%`);
 
-  if (coursesError) {
+  if (validCategories.length) {
+    courseQuery = courseQuery.in("categoryid", validCategories);
+  }
+
+  if (validLevels.length) {
+    courseQuery = courseQuery.in("levelid", validLevels);
+  }
+
+  if (minPrice !== -1 && maxPrice !== -1) {
+    courseQuery = courseQuery.gte("price", minPrice).lte("price", maxPrice);
+  }
+
+  // 2. 📦 Fetch data in parallel
+  const [coursesResult, durationsResult, ratingsResult] = await Promise.all([
+    courseQuery,
+    supabase.rpc("get_course_durations"),
+    supabase.rpc("get_course_ratings"),
+  ]);
+
+  const { data: courses, error: courseError } = coursesResult;
+  const { data: durationsData, error: durationError } = durationsResult;
+  const { data: ratingsData, error: ratingsError } = ratingsResult;
+
+  console.log(courses);
+  console.log(durationsData);
+  console.log(ratingsData);
+  if (courseError || !courses) {
     return {
       success: false,
-      message: `Error fetching courses: ${coursesError.message}`,
+      message: courseError?.message || "Failed to fetch courses",
+      data: [],
     };
   }
+
+  if (durationError || !durationsData) {
+    return {
+      success: false,
+      message: durationError?.message || "Failed to fetch course durations",
+      data: [],
+    };
+  }
+
+  if (ratingsError || !ratingsData) {
+    return {
+      success: false,
+      message: ratingsError?.message || "Failed to fetch course ratings",
+      data: [],
+    };
+  }
+
+  // 3. 🧮 Map durations and ratings by courseid for faster access
+  const durationMap = new Map<string, number>(
+    durationsData.map((d: CourseDuration) => [
+      d.courseid,
+      d.total_duration_minutes,
+    ])
+  );
+
+  const ratingMap = new Map<string, number>(
+    ratingsData.map((r: CourseRating) => [
+      r.courseid,
+      Number(r.average_rating.toFixed(1)),
+    ])
+  );
+
+  // 4. ⏱️ Convert duration filters to minutes
+  const durationRangesInMinutes = duration.map((range) => {
+    const [minH, maxH] = range.split("-").map(Number);
+    return {
+      min: minH * 60,
+      max: maxH ? maxH * 60 : Infinity,
+    };
+  });
+
+  const selectedRatings = ratings.map(Number);
+
+  // 5. 🔍 Filter
+  const finalCourses = courses.filter((course) => {
+    const totalMinutes = durationMap.get(course.courseid);
+    const avgRating = ratingMap.get(course.courseid);
+
+    if (!totalMinutes || !avgRating) return false;
+
+    const matchesDuration =
+      durationRangesInMinutes.length === 0 ||
+      durationRangesInMinutes.some(
+        (range) => totalMinutes >= range.min && totalMinutes <= range.max
+      );
+
+    const matchesRating =
+      selectedRatings.length === 0 || selectedRatings.includes(avgRating);
+
+    return matchesDuration && matchesRating;
+  });
 
   return {
     success: true,
-    message: "Courses Fetched Successfully",
-    data: courses,
+    message: "Courses retrieved successfully",
+    data: finalCourses,
   };
 };
 

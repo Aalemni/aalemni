@@ -204,6 +204,13 @@ export type Category_courses = {
   categoryname: string;
   color: string;
   icon: string;
+  text_color: string
+};
+
+export type Level_courses = {
+  levelid: string;
+  name: string;
+  display_order: number;
 };
 
 export type Course_courses = {
