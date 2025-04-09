@@ -2,7 +2,7 @@
 import CoursesPage from "@/components/courses/courses";
 import { getAllCategories } from "@/supabase/actions/category_actions";
 import { getAllCourses } from "@/supabase/actions/course_actions";
-import { getAllCourseLevels } from "@/supabase/actions/level_actions";
+import { getAllCourseLevels } from "@/supabase/actions/course_level_actions";
 import { Category_courses, Course_courses, Level_courses } from "@/types/types";
 
 type GetAllCoursesResponse = {

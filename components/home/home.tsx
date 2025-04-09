@@ -26,14 +26,25 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "../layout/footer";
 import { User } from "@supabase/supabase-js"; // Import User type
-import { Category_courses } from "@/types/types";
+import {
+  Category_courses,
+  Course_courses_with_level,
+  PublicTestimonial,
+} from "@/types/types";
 
 interface HomeProps {
   user: User | null; // user can be null if not logged in
   categories: Category_courses[];
+  featured_courses: Course_courses_with_level[];
+  testimonials: PublicTestimonial[];
 }
 
-export default function HomePage({ user, categories }: HomeProps) {
+export default function HomePage({
+  user,
+  categories,
+  featured_courses,
+  testimonials,
+}: HomeProps) {
   const rr = [
     {
       icon: Code,
@@ -248,7 +259,9 @@ export default function HomePage({ user, categories }: HomeProps) {
                       const IconComponent =
                         iconMap[category.icon as keyof typeof iconMap];
                       return IconComponent ? (
-                        <IconComponent className={`h-8 w-8 ${category.text_color}`} />
+                        <IconComponent
+                          className={`h-8 w-8 ${category.text_color}`}
+                        />
                       ) : null;
                     })()}
                   </div>
@@ -299,54 +312,12 @@ export default function HomePage({ user, categories }: HomeProps) {
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[
-              {
-                title: "Complete Web Development Bootcamp",
-                instructor: "Dr. Sarah Johnson",
-                image: "/placeholder.svg?height=200&width=360&text=Web+Dev",
-                price: "$89.99",
-                rating: 4.9,
-                reviews: 842,
-                level: "Beginner to Advanced",
-                category: "Web Development",
-              },
-              {
-                title: "Data Science and Machine Learning",
-                instructor: "Michael Chen",
-                image:
-                  "/placeholder.svg?height=200&width=360&text=Data+Science",
-                price: "$79.99",
-                rating: 4.8,
-                reviews: 756,
-                level: "Intermediate",
-                category: "Data Science",
-              },
-              {
-                title: "UI/UX Design Masterclass",
-                instructor: "Emily Rodriguez",
-                image: "/placeholder.svg?height=200&width=360&text=UI/UX",
-                price: "$69.99",
-                rating: 4.9,
-                reviews: 689,
-                level: "All Levels",
-                category: "Design",
-              },
-              {
-                title: "Business Strategy Fundamentals",
-                instructor: "Dr. James Wilson",
-                image: "/placeholder.svg?height=200&width=360&text=Business",
-                price: "$59.99",
-                rating: 4.7,
-                reviews: 512,
-                level: "Beginner",
-                category: "Business",
-              },
-            ].map((course, i) => (
-              <Link key={i} href={`/courses/${i + 1}`}>
+            {featured_courses.map((course, i) => (
+              <Link key={i} href={`/courses/${course.courseid}`}>
                 <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                   <div className="aspect-video relative">
                     <Image
-                      src={course.image || "/placeholder.svg"}
+                      src={"/placeholder.svg"}
                       alt={course.title}
                       fill
                       className="object-cover"
@@ -356,7 +327,7 @@ export default function HomePage({ user, categories }: HomeProps) {
                         variant="secondary"
                         className="bg-aalemni-navy text-white"
                       >
-                        {course.category}
+                        {course.category.categoryname}
                       </Badge>
                     </div>
                   </div>
@@ -365,15 +336,13 @@ export default function HomePage({ user, categories }: HomeProps) {
                       {course.title}
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {course.instructor}
+                      {course.instructor.fullname}
                     </p>
                     <div className="mt-2 flex items-center gap-1">
                       <Star className="h-4 w-4 fill-aalemni-orange text-aalemni-orange" />
-                      <span className="text-sm font-medium">
-                        {course.rating}
-                      </span>
+                      <span className="text-sm font-medium">3</span>
                       <span className="text-xs text-muted-foreground">
-                        ({course.reviews})
+                        (50)
                       </span>
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -381,7 +350,7 @@ export default function HomePage({ user, categories }: HomeProps) {
                         variant="outline"
                         className="text-xs font-normal border-aalemni-blue text-aalemni-blue"
                       >
-                        {course.level}
+                        {course.level.name}
                       </Badge>
                     </div>
                   </CardContent>
@@ -550,46 +519,24 @@ export default function HomePage({ user, categories }: HomeProps) {
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {[
-              {
-                name: "Sarah Johnson",
-                role: "Web Developer",
-                image: "/placeholder.svg?height=100&width=100&text=SJ",
-                quote:
-                  "Aalemni's web development bootcamp completely changed my career trajectory. I went from a marketing assistant to a full-stack developer in just 6 months. The instructors were incredibly supportive and the curriculum was comprehensive and up-to-date.",
-              },
-              {
-                name: "Michael Chen",
-                role: "Data Scientist",
-                image: "/placeholder.svg?height=100&width=100&text=MC",
-                quote:
-                  "The data science course on Aalemni provided me with the practical skills I needed to transition into the field. The hands-on projects and real-world datasets made learning complex concepts much easier. I now work at a top tech company thanks to Aalemni.",
-              },
-              {
-                name: "Emily Rodriguez",
-                role: "UX Designer",
-                image: "/placeholder.svg?height=100&width=100&text=ER",
-                quote:
-                  "As someone with no design background, I was worried about learning UX design. Aalemni's step-by-step approach and supportive community made the journey enjoyable. I'm now freelancing as a UX designer and loving every minute of it!",
-              },
-            ].map((testimonial, i) => (
+            {testimonials.map((testimonial, i) => (
               <Card key={i} className="h-full">
                 <CardContent className="p-6">
                   <div className="flex flex-col items-center text-center">
                     <div className="h-20 w-20 overflow-hidden rounded-full">
                       <Image
-                        src={testimonial.image || "/placeholder.svg"}
-                        alt={testimonial.name}
+                        src={"/placeholder.svg"}
+                        alt={testimonial.fullname}
                         width={80}
-                        height={80}
+                        height={80} 
                         className="h-full w-full object-cover"
                       />
                     </div>
                     <h3 className="mt-4 text-xl font-bold">
-                      {testimonial.name}
+                      {testimonial.fullname}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
+                      {testimonial.email}
                     </p>
                     <div className="mt-4 flex">
                       {Array(5)
@@ -602,7 +549,7 @@ export default function HomePage({ user, categories }: HomeProps) {
                         ))}
                     </div>
                     <p className="mt-4 italic text-muted-foreground">
-                      "{testimonial.quote}"
+                      "{testimonial.description}"
                     </p>
                   </div>
                 </CardContent>

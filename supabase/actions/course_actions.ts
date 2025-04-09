@@ -1,7 +1,11 @@
 "use server";
 
 import { createClient } from "@/supabase/utils/server";
-import { Course_courses, CoursePayload } from "@/types/types";
+import {
+  Course_courses,
+  Course_courses_with_level,
+  CoursePayload,
+} from "@/types/types";
 import { validate as isUuid } from "uuid";
 
 const validateCourseData = (data: Partial<CoursePayload>) => {
@@ -88,6 +92,11 @@ type CourseRating = {
   average_rating: number;
 };
 
+type GetAllCoursesResponseWithLevel = {
+  success: boolean;
+  message: string;
+  data: Course_courses_with_level[];
+};
 // export const getAllCourses = async (
 //   query = "",
 //   categories: string[] = [],
@@ -136,114 +145,6 @@ type CourseRating = {
 //   };
 // };
 
-export const getAllCourses_2 = async (
-  query = "",
-  categories: string[] = [],
-  minPrice: number = -1,
-  maxPrice: number = -1,
-  levels: string[] = [],
-  duration: string[] = [],
-  ratings: string[] = []
-): Promise<GetAllCoursesResponse> => {
-  const supabase = await createClient();
-
-  const validCategories = categories.filter((categoryId) => isUuid(categoryId));
-  const validLevels = levels.filter((levelId) => isUuid(levelId));
-
-  let courseQuery = supabase
-    .from("courses")
-    .select("*, instructor:instructorid(*), category:categoryid(*)")
-    .ilike("title", `%${query}%`);
-
-  if (validCategories.length > 0) {
-    courseQuery = courseQuery.in("categoryid", validCategories);
-  }
-
-  if (validLevels.length > 0) {
-    courseQuery = courseQuery.in("levelid", validLevels);
-  }
-
-  if (minPrice !== -1 && maxPrice !== -1) {
-    courseQuery = courseQuery.gte("price", minPrice).lte("price", maxPrice);
-  }
-
-  const { data: courses, error: courseError } = await courseQuery;
-  if (courseError || !courses) {
-    return {
-      success: false,
-      message: courseError?.message || "Failed to fetch courses",
-      data: [],
-    };
-  }
-  console.log(courses);
-
-  const { data: durationsData, error: durationError } = await supabase.rpc(
-    "get_course_durations"
-  );
-
-  if (durationError || !durationsData) {
-    return {
-      success: false,
-      message: durationError?.message || "Failed to fetch course durations",
-      data: [],
-    };
-  }
-
-  const durationRangesInMinutes = duration.map((range) => {
-    const [minH, maxH] = range.split("-").map(Number);
-    return {
-      min: minH * 60,
-      max: maxH ? maxH * 60 : Infinity,
-    };
-  });
-
-  const filteredCourses = courses.filter((course) => {
-    const matchedDuration = durationsData.find(
-      (d: CourseDuration) => d.courseid === course.courseid
-    );
-
-    const totalMinutes = matchedDuration?.total_duration_minutes ?? 0;
-    if (totalMinutes === 0) return false;
-
-    if (durationRangesInMinutes.length === 0) return true;
-
-    return durationRangesInMinutes.some(
-      (range) => totalMinutes >= range.min && totalMinutes <= range.max
-    );
-  });
-
-  const { data: ratingsData, error: ratingsError } =
-    await supabase.rpc("get_course_ratings");
-
-  if (ratingsError || !ratingsData) {
-    return {
-      success: false,
-      message: ratingsError?.message || "Failed to fetch course ratings",
-      data: [],
-    };
-  }
-
-  const selectedRatings = ratings.map(Number);
-
-  const finalCourses = filteredCourses.filter((course) => {
-    const rating =
-      ratingsData.find((r: CourseRating) => r.courseid === course.courseid)
-        ?.average_rating ?? 0;
-
-    if (rating === 0) return false; // No reviews
-
-    if (selectedRatings.length === 0) return true;
-
-    return selectedRatings.includes(Number(rating.toFixed(1)));
-  });
-
-  return {
-    success: true,
-    message: "Courses retrieved successfully",
-    data: finalCourses,
-  };
-};
-
 export const getAllCourses = async (
   query = "",
   categories: string[] = [],
@@ -258,7 +159,6 @@ export const getAllCourses = async (
   const validCategories = categories.filter(isUuid);
   const validLevels = levels.filter(isUuid);
 
-  // 1. 🧠 Build course query
   let courseQuery = supabase
     .from("courses")
     .select("*, instructor:instructorid(*), category:categoryid(*)")
@@ -276,7 +176,6 @@ export const getAllCourses = async (
     courseQuery = courseQuery.gte("price", minPrice).lte("price", maxPrice);
   }
 
-  // 2. 📦 Fetch data in parallel
   const [coursesResult, durationsResult, ratingsResult] = await Promise.all([
     courseQuery,
     supabase.rpc("get_course_durations"),
@@ -314,7 +213,6 @@ export const getAllCourses = async (
     };
   }
 
-  // 3. 🧮 Map durations and ratings by courseid for faster access
   const durationMap = new Map<string, number>(
     durationsData.map((d: CourseDuration) => [
       d.courseid,
@@ -329,7 +227,6 @@ export const getAllCourses = async (
     ])
   );
 
-  // 4. ⏱️ Convert duration filters to minutes
   const durationRangesInMinutes = duration.map((range) => {
     const [minH, maxH] = range.split("-").map(Number);
     return {
@@ -340,7 +237,6 @@ export const getAllCourses = async (
 
   const selectedRatings = ratings.map(Number);
 
-  // 5. 🔍 Filter
   const finalCourses = courses.filter((course) => {
     const totalMinutes = durationMap.get(course.courseid);
     const avgRating = ratingMap.get(course.courseid);
@@ -365,41 +261,6 @@ export const getAllCourses = async (
     data: finalCourses,
   };
 };
-
-// export const editCourse = async (id: string, formData: FormData) => {
-//   const supabase = await createClient();
-
-//   const course: Partial<CoursePayload> = {
-//     title: formData.get("title")?.toString() || "",
-//     name: formData.get("name")?.toString() || "",
-//     overview: formData.get("overview")?.toString() || "",
-//     description: formData.get("description")?.toString() || "",
-//     levelId: formData.get("levelId")?.toString() || "",
-//     keyTopics: formData.get("keyTopics")?.toString()?.split(",") || [],
-//     resources: formData.get("resources")?.toString()?.split(",") || [],
-//   };
-
-//   const previewImage = formData.get("previewImage")?.toString();
-//   if (previewImage) {
-//     course.previewImage = previewImage;
-//   }
-
-//   const validationError = validateCourseData(course);
-//   if (validationError) {
-//     return { success: false, message: validationError };
-//   }
-
-//   const { error } = await supabase.from("courses").update(course).eq("id", id);
-
-//   if (error) {
-//     return {
-//       success: false,
-//       message: `Failed to update course: ${error.message}`,
-//     };
-//   }
-
-//   return { success: true, message: "Course updated successfully" };
-// };
 
 export const editCourse = async (id: string, formData: FormData) => {
   const supabase = await createClient();
@@ -521,4 +382,131 @@ export const deleteCourse = async (id: string) => {
   }
 
   return { success: true, message: "Course deleted successfully" };
+};
+
+type SyllabusResponse = {
+  success: boolean;
+  message: string;
+  data?: any;
+};
+
+// Course_courses_with_level
+export const getFeaturedCoursesWithDetails =
+  async (): Promise<GetAllCoursesResponseWithLevel> => {
+    const supabase = await createClient();
+
+    // Step 1: Get all featured course ids
+    const { data: featuredCourses, error: featuredCoursesError } =
+      await supabase.from("featured_courses").select("courseid");
+
+    if (featuredCoursesError || !featuredCourses) {
+      console.error("Error fetching featured courses:", featuredCoursesError);
+      return {
+        success: false,
+        message:
+          featuredCoursesError.message ||
+          "Error While getting featured courses",
+        data: [],
+      };
+    }
+
+    // Step 2: Get courses details based on courseid from featured_courses
+    const { data: courses, error: coursesError } = await supabase
+      .from("courses")
+      .select(
+        "*, instructor:instructorid(*), category:categoryid(*), level:levelid(*)"
+      )
+      .in(
+        "courseid",
+        featuredCourses.map((course) => course.courseid)
+      );
+
+    if (coursesError || !courses) {
+      console.error("Error fetching courses:", coursesError);
+      return {
+        success: false,
+        message: coursesError.message || "Error While getting courses",
+        data: [],
+      };
+    }
+
+    return {
+      success: true,
+      message: "Featched Courses successfully",
+      data: courses,
+    };
+  };
+
+interface Page {
+  pageid: string;
+  name: string;
+  title: string;
+  overview?: string;
+  content?: string;
+  display_order: number;
+  estimatedduration: number;
+  completed?: boolean;
+}
+
+interface Lesson {
+  lessonid: string;
+  name: string;
+  title: string;
+  overview?: string;
+  display_order: number;
+  page?: Page[];
+}
+
+interface Module {
+  moduleid: string;
+  courseid: string;
+  name: string;
+  title: string;
+  overview?: string;
+  display_order: number;
+  lesson?: Lesson[];
+}
+
+export const getCourseSyllabus = async (
+  courseid: string
+): Promise<SyllabusResponse> => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("module")
+    .select(
+      `
+        *,
+        lesson:lessonid (
+          *,
+          page:pageid (
+            *
+          )
+        )
+      `
+    )
+    .eq("courseid", courseid)
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  const formattedModules = (data as Module[]).map((module: Module) => ({
+    ...module,
+    lessons:
+      module.lesson?.map((lesson: Lesson) => ({
+        ...lesson,
+        pages: lesson.page || [],
+      })) || [],
+  }));
+
+  return {
+    success: true,
+    message: "Syllabus fetched successfully.",
+    data: formattedModules,
+  };
 };

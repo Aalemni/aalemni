@@ -1,10 +1,10 @@
 import { createClient } from "@/supabase/utils/server";
-import { Category_courses } from "@/types/types";
+import { Tag_courses } from "@/types/types";
 
-type GetAllCategoriesResponse = {
+type GetAllTagsResponse = {
   success: boolean;
   message: string;
-  data: Category_courses[];
+  data: Tag_courses[];
 };
 
 type AddCategoryResponse = {
@@ -22,11 +22,11 @@ type DeleteCategoryResponse = {
   message: string;
 };
 
-// Get all categories
-export const getAllCategories = async (): Promise<GetAllCategoriesResponse> => {
+// Get all tags
+export const getAllTags = async (): Promise<GetAllTagsResponse> => {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("categories").select("*");
+  const { data, error } = await supabase.from("tags").select("*");
 
   if (error) {
     return {
@@ -38,18 +38,18 @@ export const getAllCategories = async (): Promise<GetAllCategoriesResponse> => {
 
   return {
     success: true,
-    message: "Categories retrieved successfully",
+    message: "Tags retrieved successfully",
     data: data || [],
   };
 };
 
-// Add a new category
+// Add a new tag
 export const addCategory = async (
-  category: Omit<Category_courses, "categoryid"> // Omit the ID field since it is auto-generated
+  tag: Omit<Tag_courses, "tagid"> // Omit the ID field since it is auto-generated
 ): Promise<AddCategoryResponse> => {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("categories").insert([category]);
+  const { data, error } = await supabase.from("tags").insert([tag]);
 
   if (error) {
     return {
@@ -64,17 +64,17 @@ export const addCategory = async (
   };
 };
 
-// Edit an existing category
+// Edit an existing tag
 export const editCategory = async (
-  categoryId: string,
-  updatedFields: Partial<Category_courses>
+  tagId: string,
+  updatedFields: Partial<Tag_courses>
 ): Promise<EditCategoryResponse> => {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("categories")
+    .from("tags")
     .update(updatedFields)
-    .eq("id", categoryId);
+    .eq("id", tagId);
 
   if (error) {
     return {
@@ -89,16 +89,16 @@ export const editCategory = async (
   };
 };
 
-// Delete a category
+// Delete a tag
 export const deleteCategory = async (
-  categoryId: string
+  tagId: string
 ): Promise<DeleteCategoryResponse> => {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("categories")
+    .from("tags")
     .delete()
-    .eq("id", categoryId);
+    .eq("id", tagId);
 
   if (error) {
     return {

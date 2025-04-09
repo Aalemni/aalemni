@@ -204,7 +204,24 @@ export type Category_courses = {
   categoryname: string;
   color: string;
   icon: string;
-  text_color: string
+  text_color: string;
+};
+
+export type Tag_courses = {
+  tagid: string;
+  tagname: string;
+  color: string;
+  icon: string;
+  text_color: string;
+};
+
+export type PublicTestimonial = {
+  testimonialid: string;
+  fullname: string;
+  email: string;
+  description: string;
+  rate: number;
+  companyid: number;
 };
 
 export type Level_courses = {
@@ -228,4 +245,66 @@ export type Course_courses = {
   instructor: Instructor_courses;
   categoryid: number;
   category: Category_courses;
+};
+
+export type Course_courses_with_level = {
+  courseid: string;
+  instructorid: string;
+  name: string;
+  title: string;
+  overview: string;
+  resources: string[] | null;
+  levelid: string;
+  createdat: string;
+  keytopics: string[] | null;
+  previewimage: string | null;
+  price: number;
+  instructor: Instructor_courses;
+  categoryid: number;
+  category: Category_courses;
+  level: Level_courses;
+};
+
+export type Instructor_testimonial_raw = {
+  testimonialid: string;
+  instructorid: string;
+  description: string;
+  rate: number;
+  instructor: {
+    userid: string;
+    fullname: string;
+    username: string;
+    email: string;
+    phonenumber: string;
+    role: string;
+    status: string;
+  };
+};
+
+export type Instructor_detail = {
+  detailid: string;
+  instructorid: string;
+  bio: string | null;
+  experience: any; // Or define a proper export type if needed
+  certificates: any;
+  role: string | null;
+};
+
+export type FullInstructorTestimonial = {
+  testimonialid: string;
+  instructorid: string;
+  description: string;
+  rate: number;
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  phonenumber: string;
+  role: string;
+  status: string;
+  detailid: string | null;
+  bio: string | null;
+  experience: any;
+  certificates: any;
+  instructor_role: string | null;
 };

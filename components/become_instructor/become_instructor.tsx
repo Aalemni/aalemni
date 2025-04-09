@@ -36,8 +36,15 @@ import { Badge } from "@/components/uii_/badge";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { signUpAction } from "@/supabase/actions/auth_actions";
+import { FullInstructorTestimonial } from "@/types/types";
 
-export default function BecomeInstructorPage() {
+interface BecomeInstructorPageProps {
+  instructor_testimonials: FullInstructorTestimonial[];
+}
+
+export default function BecomeInstructorPage({
+  instructor_testimonials,
+}: BecomeInstructorPageProps) {
   const [formData, setformData] = useState({
     name: "",
     email: "",
@@ -568,77 +575,46 @@ export default function BecomeInstructorPage() {
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Dr. Michael Chen",
-                role: "Data Science Instructor",
-                image: "/placeholder.svg?height=200&width=200&text=MC",
-                quote:
-                  "Teaching on Aalemni has allowed me to reach students from around the world who are passionate about data science. The platform's tools make it easy to create engaging content, and the support team is always there to help. I've been able to build a thriving teaching business while doing what I love.",
-                students: "12,850+",
-                courses: "6",
-                rating: "4.8",
-              },
-              {
-                name: "Emily Rodriguez",
-                role: "UX/UI Design Specialist",
-                image: "/placeholder.svg?height=200&width=200&text=ER",
-                quote:
-                  "As a design professional, I was looking for a way to share my knowledge with aspiring designers. Aalemni provided the perfect platform to do this. The course creation process is streamlined, and the marketing support has helped me grow my student base exponentially. It's been incredibly rewarding.",
-                students: "9,870+",
-                courses: "5",
-                rating: "4.9",
-              },
-              {
-                name: "Robert Kim",
-                role: "Cybersecurity Specialist",
-                image: "/placeholder.svg?height=200&width=200&text=RK",
-                quote:
-                  "I started teaching on Aalemni as a side project, but it quickly became a significant part of my career. The platform's focus on quality education aligns perfectly with my teaching philosophy. I've not only earned substantial income but also built a community of cybersecurity enthusiasts who continue to inspire me.",
-                students: "6,540+",
-                courses: "5",
-                rating: "4.9",
-              },
-            ].map((testimonial, i) => (
-              <Card key={i} className="overflow-hidden">
+            {instructor_testimonials.map((testimonial, i) => (
+              <Card key={testimonial.testimonialid} className="overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex flex-col items-center text-center">
                     <div className="h-24 w-24 overflow-hidden rounded-full">
                       <Image
-                        src={testimonial.image || "/placeholder.svg"}
-                        alt={testimonial.name}
+                        src={"/placeholder.svg"} // replace with actual image URL if available
+                        alt={testimonial.fullname}
                         width={96}
                         height={96}
                         className="h-full w-full object-cover"
                       />
                     </div>
                     <h3 className="mt-4 text-xl font-bold">
-                      {testimonial.name}
+                      {testimonial.fullname}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
+                      {testimonial.instructor_role || testimonial.role}
                     </p>
                     <div className="mt-2 flex items-center gap-1">
                       <Star className="h-4 w-4 fill-primary text-primary" />
                       <span className="text-sm">
-                        {testimonial.rating} Instructor Rating
+                        {testimonial.rate}
                       </span>
                     </div>
                     <div className="mt-6">
                       <p className="italic text-muted-foreground">
-                        "{testimonial.quote}"
+                        "{testimonial.description}"
                       </p>
                     </div>
-                    <div className="mt-6 flex w-full justify-between border-t pt-4">
+                    {/* <div className="mt-6 flex w-full justify-between border-t pt-4">
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">
                           Students
                         </p>
-                        <p className="font-bold">{testimonial.students}</p>
+                        <p className="font-bold"></p>
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">Courses</p>
-                        <p className="font-bold">{testimonial.courses}</p>
+                        <p className="font-bold"></p>
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">
@@ -646,7 +622,7 @@ export default function BecomeInstructorPage() {
                         </p>
                         <p className="font-bold">{i + 2}</p>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>
