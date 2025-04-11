@@ -44,17 +44,20 @@ export default function AboutPage() {
       {/* Video Section */}
       <section className="mb-16">
         <div className="relative aspect-video max-w-4xl mx-auto rounded-xl overflow-hidden shadow-lg">
-          <Image
-            src="/placeholder.svg?height=720&width=1280"
-            alt="Aalemni video thumbnail"
-            fill
-            className="object-cover"
+          <video
+            src="/aalemni.mp4"
+            autoPlay
+            controls
+            style={{
+              height: "100%",
+              width: "100%",
+            }}
           />
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+          {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <button className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
               <Play className="h-10 w-10 text-primary fill-primary" />
             </button>
-          </div>
+          </div> */}
         </div>
       </section>
 

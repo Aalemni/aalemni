@@ -8,7 +8,7 @@ import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import { Button } from "@/components/uii_/button";
 import { Input } from "@/components/uii_/input";
 import { Label } from "@/components/uii_/label";
-import { Checkbox } from "@/components/uii_/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,

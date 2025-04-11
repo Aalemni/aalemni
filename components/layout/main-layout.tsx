@@ -12,17 +12,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useTranslation } from "@/contexts/translation-context";
+import { User } from "@/types/types";
 
 interface MainLayoutProps {
   children: React.ReactNode;
   showSidebar?: boolean;
+  logged_in_user: User;
 }
 
-export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
+export function MainLayout({
+  children,
+  showSidebar = true,
+  logged_in_user,
+}: MainLayoutProps) {
   const pathname = usePathname();
   const { t } = useTranslation();
 
-  // Determine user role based on URL path
+  type UserRole = "admin" | "instructor" | "student";
+
+  // Determine user role based on URL path if user not found
   const getUserRole = () => {
     if (!pathname) return "student";
     if (pathname.startsWith("/admin")) return "admin";
@@ -30,8 +38,10 @@ export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
     if (pathname.startsWith("/student")) return "student";
     return "student";
   };
-
-  const userRole = getUserRole();
+  let userRole = logged_in_user.role;
+  if (!logged_in_user.role && logged_in_user.role.length < 0) {
+    userRole = getUserRole();
+  }
 
   if (!showSidebar) {
     return <>{children}</>;
@@ -40,7 +50,7 @@ export function MainLayout({ children, showSidebar = true }: MainLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <AalemniSidebar userRole={userRole} />
+        <AalemniSidebar userRole={userRole as UserRole} />
         <SidebarInset className="flex-1">
           <header className="flex h-16 items-center gap-4 border-b bg-background px-6">
             <SidebarTrigger />

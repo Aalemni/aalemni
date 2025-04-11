@@ -11,33 +11,6 @@ type GetAllInstructorTestimonialsResponse = {
   data: FullInstructorTestimonial[];
 };
 
-// export const getAllInstructorTestimonials =
-//   async (): Promise<GetAllInstructorTestimonialsResponse> => {
-//     const supabase = await createClient();
-
-//     const { data, error } = await supabase.from("instructor_testimonials")
-//       .select(`
-//       *,
-//       instructor:instructorid (
-//         *,
-//         instructor_details:userid (*)
-//       )
-//     `);
-//     console.log(data);
-//     if (error) {
-//       return {
-//         success: false,
-//         message: error.message,
-//         data: [],
-//       };
-//     }
-//     return {
-//       success: true,
-//       message: "Categories retrieved successfully",
-//       data: data || [],
-//     };
-//   };
-
 export const getFullInstructorTestimonials =
   async (): Promise<GetAllInstructorTestimonialsResponse> => {
     const supabase = await createClient();

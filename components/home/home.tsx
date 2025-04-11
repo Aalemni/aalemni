@@ -2,16 +2,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowRight,
-  BookOpen,
-  Users,
-  Award,
-  GraduationCap,
   Play,
   Star,
   BarChart,
-  Globe,
-  Clock,
   Code,
   LineChart,
   Palette,
@@ -25,18 +18,24 @@ import { Badge } from "@/components/uii_/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "../layout/footer";
-import { User } from "@supabase/supabase-js"; // Import User type
+import { User } from "@supabase/supabase-js";
 import {
   Category_courses,
   Course_courses_with_level,
+  Feature,
   PublicTestimonial,
 } from "@/types/types";
+import TestimonialsCarousel from "../testimonials/testimonials";
+import FeaturesCarousel from "../company_features/company_features";
+import CategoriesCarousel from "../categories/categories";
+import FeaturedCoursesSwiper from "../courses_swiper/courses_swiper";
 
 interface HomeProps {
-  user: User | null; // user can be null if not logged in
+  user: User | null;
   categories: Category_courses[];
   featured_courses: Course_courses_with_level[];
   testimonials: PublicTestimonial[];
+  company_features: Feature[];
 }
 
 export default function HomePage({
@@ -44,6 +43,7 @@ export default function HomePage({
   categories,
   featured_courses,
   testimonials,
+  company_features,
 }: HomeProps) {
   const rr = [
     {
@@ -89,12 +89,6 @@ export default function HomePage({
       href: "/courses?category=personal-development",
     },
   ];
-
-  const iconMap = {
-    Code: Code,
-    LineChart: LineChart,
-  };
-
   return (
     <>
       {/* Hero Section */}
@@ -244,40 +238,7 @@ export default function HomePage({
             </p>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            {categories.map((category, i) => (
-              <Link
-                key={i}
-                href={"/courses?category=" + category.categoryid}
-                className="group"
-              >
-                <div className="flex flex-col items-center rounded-lg p-6 text-center transition-all hover:bg-aalemni-light">
-                  <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-full ${category.color}`}
-                  >
-                    {(() => {
-                      const IconComponent =
-                        iconMap[category.icon as keyof typeof iconMap];
-                      return IconComponent ? (
-                        <IconComponent
-                          className={`h-8 w-8 ${category.text_color}`}
-                        />
-                      ) : null;
-                    })()}
-                  </div>
-                  <h3 className="mt-4 font-semibold text-aalemni-navy">
-                    {category.categoryname}
-                  </h3>
-                  <div className="mt-2 flex items-center text-sm text-muted-foreground">
-                    <span className="transition-all group-hover:mr-2">
-                      Explore
-                    </span>
-                    <ArrowRight className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <CategoriesCarousel categories={categories} />
         </div>
       </section>
 
@@ -311,64 +272,7 @@ export default function HomePage({
             </Button>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {featured_courses.map((course, i) => (
-              <Link key={i} href={`/courses/${course.courseid}`}>
-                <Card className="h-full overflow-hidden transition-all hover:shadow-md">
-                  <div className="aspect-video relative">
-                    <Image
-                      src={"/placeholder.svg"}
-                      alt={course.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute right-2 top-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-aalemni-navy text-white"
-                      >
-                        {course.category.categoryname}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold line-clamp-2 text-aalemni-navy">
-                      {course.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {course.instructor.fullname}
-                    </p>
-                    <div className="mt-2 flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-aalemni-orange text-aalemni-orange" />
-                      <span className="text-sm font-medium">3</span>
-                      <span className="text-xs text-muted-foreground">
-                        (50)
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge
-                        variant="outline"
-                        className="text-xs font-normal border-aalemni-blue text-aalemni-blue"
-                      >
-                        {course.level.name}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="border-t p-4 flex items-center justify-between">
-                    <span className="font-bold text-aalemni-navy">
-                      {course.price}
-                    </span>
-                    <Button
-                      size="sm"
-                      className="bg-aalemni-orange hover:bg-aalemni-orange/90 text-white"
-                    >
-                      View Course
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          <FeaturedCoursesSwiper featured_courses={featured_courses} />
         </div>
       </section>
 
@@ -390,80 +294,7 @@ export default function HomePage({
               Aalemni.{" "}
             </p>
           </div>
-
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                icon: BookOpen,
-                title: "Comprehensive Curriculum",
-                description:
-                  "Access over 5,000 courses covering the most in-demand skills across industries.",
-                color: "bg-aalemni-orange/10",
-                iconColor: "text-aalemni-orange",
-              },
-              {
-                icon: Users,
-                title: "Expert Instructors",
-                description:
-                  "Learn from industry professionals with real-world experience and proven teaching methods.",
-                color: "bg-aalemni-navy/10",
-                iconColor: "text-aalemni-navy",
-              },
-              {
-                icon: Clock,
-                title: "Flexible Learning",
-                description:
-                  "Study at your own pace, anytime and anywhere, with lifetime access to your courses.",
-                color: "bg-aalemni-blue/10",
-                iconColor: "text-aalemni-blue",
-              },
-              {
-                icon: Award,
-                title: "Recognized Certificates",
-                description:
-                  "Earn certificates that are recognized by top employers and institutions worldwide.n",
-                color: "bg-aalemni-orange/10",
-                iconColor: "text-aalemni-orange",
-              },
-              {
-                icon: Globe,
-                title: "Global Community",
-                description:
-                  "Join a diverse community of learners and instructors from over 150 countries.",
-                color: "bg-aalemni-navy/10",
-                iconColor: "text-aalemni-navy",
-              },
-              {
-                icon: BarChart,
-                title: "Career Advancement",
-                description:
-                  "Gain the skills you need to advance your career or pivot to a new industry.",
-                color: "bg-aalemni-blue/10",
-                iconColor: "text-aalemni-blue",
-              },
-            ].map((benefit, i) => (
-              <Card
-                key={i}
-                className="border-none shadow-none hover:bg-aalemni-light/50 transition-colors"
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-full ${benefit.color} ${benefit.iconColor}`}
-                    >
-                      <benefit.icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-bold text-aalemni-navy">
-                      {benefit.title}
-                    </h3>
-                    <p className="mt-2 text-muted-foreground">
-                      {benefit.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <FeaturesCarousel company_features={company_features} />
         </div>
       </section>
 
@@ -517,8 +348,8 @@ export default function HomePage({
               Aalemni.
             </p>
           </div>
-
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <TestimonialsCarousel testimonials={testimonials} />
+          {/* <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
             {testimonials.map((testimonial, i) => (
               <Card key={i} className="h-full">
                 <CardContent className="p-6">
@@ -555,7 +386,7 @@ export default function HomePage({
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 

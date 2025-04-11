@@ -224,6 +224,16 @@ export type PublicTestimonial = {
   companyid: number;
 };
 
+export type User = {
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  phonenumber: string;
+  role: string;
+  status: string;
+};
+
 export type Level_courses = {
   levelid: string;
   name: string;
@@ -307,4 +317,34 @@ export type FullInstructorTestimonial = {
   experience: any;
   certificates: any;
   instructor_role: string | null;
+};
+
+export type Feature = {
+  featureid: number;
+  companyid: number;
+  name: string;
+  icon: string;
+  description: string;
+  color: string;
+  icon_color: string;
+};
+
+export type Specialty = {
+  specialityid: string;
+  specialityname: string;
+  color: string;
+  icon: string;
+};
+
+export type Instructor_Benefit = {
+  benefitid: string;
+  title: string;
+  description: string;
+  icon: string;
+};
+
+export type InstructorSpecialty = {
+  instructor_specialtiesid?: string;
+  specialityid: string;
+  instructorid: string;
 };

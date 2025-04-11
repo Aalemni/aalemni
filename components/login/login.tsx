@@ -4,7 +4,6 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import { signInAction } from "@/supabase/actions/auth_actions";
 import { Button } from "@/components/ui/button";
@@ -19,8 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const error = searchParams?.get("error") || "";
+  if (error && error.length > 0) {
+    toast.error(error);
+  }
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",

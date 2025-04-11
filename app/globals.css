@@ -180,3 +180,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+.swiper-slide {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}

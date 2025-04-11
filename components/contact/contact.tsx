@@ -80,12 +80,30 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, subject: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log("Form submitted:", formData);
+    const form_data = new FormData();
+    form_data.append("email", formData.email);
+    form_data.append("subject", formData.subject);
+    form_data.append("name", formData.name);
+    form_data.append("message", formData.message);
+    console.log("Form Data:", formData);
+    const response = await fetch("/api/mailer", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+    const responseData = await response.json();
+
+    console.log("Form response:", response);
+    if (!response.ok) {
+      console.log("falling over");
+      console.log(`response status: ${response.status}`);
+      console.log(`response data: ${responseData["message"]}`);
+    }
     setIsSubmitted(true);
-    // Reset form after submission
     setTimeout(() => {
       setIsSubmitted(false);
       setFormData({
@@ -242,7 +260,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start">
+                {/* <div className="flex items-start">
                   <MessageSquare className="h-5 w-5 text-primary mt-0.5 mr-3" />
                   <div>
                     <h3 className="font-medium">Live Chat</h3>
@@ -250,7 +268,7 @@ export default function ContactPage() {
                       Start Chat
                     </Button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
@@ -325,11 +343,11 @@ export default function ContactPage() {
             ))}
           </Accordion>
 
-          <div className="text-center mt-8">
+          {/* <div className="text-center mt-8">
             <Button variant="outline" asChild>
               <a href="/help">View All FAQs</a>
             </Button>
-          </div>
+          </div> */}
         </div>
       </section>
     </div>

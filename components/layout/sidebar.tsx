@@ -314,15 +314,9 @@ export function AalemniSidebar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center">
+                  <Link href="/instructor/settings" className="flex items-center">
                     <User className="mr-2 h-4 w-4" />
-                    <span>My Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <span>My Profile & settings</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

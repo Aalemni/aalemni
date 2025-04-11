@@ -138,6 +138,9 @@ CREATE TABLE instructor_details (
     bio TEXT,
     experience JSONB,  -- Storing experience in structured format
     certificates JSONB  -- Certificates as JSON array
+    role text null,
+    social_links jsonb[] null,
+    years_exp double precision null default '0'::double precision,
 );
 
 ---- INSTRUCTOR TESTIMONIALS TABLE ----
@@ -361,6 +364,29 @@ CREATE TABLE user_enrolled (
     FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
 );
 
+---- SPECIALITIES TABLE ----
+CREATE TABLE specialties (
+    specialityID UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    specialityName TEXT NOT NULL,
+    color TEXT NOT NULL,
+    icon TEXT NOT NULL
+);
+
+
+---- INSTRUCTOR SPECIALITIES TABLE ----
+CREATE TABLE instructor_specialties (
+    instructor_specialtiesID UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    specialityID UUID NOT NULL REFERENCES specialties(specialityID) ON DELETE CASCADE,
+    instructorID UUID NOT NULL REFERENCES users(userID) ON DELETE CASCADE
+);
+
+---- INSTRUCTOR BENEFITS TABLE ----
+CREATE TABLE instructor_benefits (
+    benefitID UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL
+);
 
 
 -- Indexes for faster queries
@@ -434,6 +460,12 @@ CREATE INDEX idx_certificates_courseID ON certificates(courseID);
 CREATE INDEX idx_certificates_userID ON certificates(userID);
 CREATE INDEX idx_user_enrolled_courseID ON user_enrolled(courseID);
 CREATE INDEX idx_user_enrolled_userID ON user_enrolled(userID);
+CREATE INDEX idx_specialties_specialityID ON specialties(specialityID);
+CREATE INDEX idx_instructor_specialties_instructor_specialtiesID ON instructor_specialties(instructor_specialtiesID);
+CREATE INDEX idx_instructor_specialties_specialityID ON instructor_specialties(specialityID);
+CREATE INDEX idx_instructor_specialties_instructorID ON instructor_specialties(instructorID);
+CREATE INDEX idx_instructor_benefits_benefitID ON instructor_benefits(benefitID);
+
 
 
 -- Enable Row-Level Security in Supabase
@@ -472,6 +504,9 @@ ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE replies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE certificates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_enrolled ENABLE ROW LEVEL SECURITY;
+ALTER TABLE specialties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE instructor_specialties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE instructor_benefits ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies in Supabase
 
@@ -968,4 +1003,24 @@ USING (
         AND courses.instructorID = auth.uid()
     )
 );
+
+---- SPECIALITIES ----
+CREATE POLICY "Everyone can see specialties "
+ON specialties FOR SELECT To public USING (true);
+
+
+---- INSTRUCTOR SPECIALITIES ----
+CREATE POLICY "Everyone can see instructor_specialties "
+ON instructor_specialties FOR SELECT To public USING (true);
+
+CREATE POLICY "Everyone can add instructor_specialties "
+ON instructor_specialties FOR INSERT To public WITH CHECK (true);
+
+
+---- INSTRUCTOR BENEFITS ----
+CREATE POLICY "Everyone can see instructor_benefits "
+ON instructor_benefits FOR SELECT To public USING (true);
+
+CREATE POLICY "Everyone can add instructor_benefits "
+ON instructor_benefits FOR INSERT To public WITH CHECK (true);
 -- ============================================================ --

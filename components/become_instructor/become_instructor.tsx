@@ -5,8 +5,6 @@ import {
   Award,
   BookOpen,
   CheckCircle,
-  ChevronRight,
-  Clock,
   CreditCard,
   Globe,
   GraduationCap,
@@ -15,7 +13,6 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/uii_/button";
 import {
@@ -34,73 +31,18 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/uii_/badge";
 import { toast } from "react-toastify";
-import { useState } from "react";
-import { signUpAction } from "@/supabase/actions/auth_actions";
-import { FullInstructorTestimonial } from "@/types/types";
-
+import { FullInstructorTestimonial, Instructor_Benefit } from "@/types/types";
+import InstructorBenefitsCarousel from "../instructor_benefits/instructor_benefits";
+import InstructorTestimonialsCarousel from "../instructor_testimonials/instructor_testimonials";
 interface BecomeInstructorPageProps {
   instructor_testimonials: FullInstructorTestimonial[];
+  instructor_benefits: Instructor_Benefit[];
 }
 
 export default function BecomeInstructorPage({
   instructor_testimonials,
+  instructor_benefits,
 }: BecomeInstructorPageProps) {
-  const [formData, setformData] = useState({
-    name: "",
-    email: "",
-    username: "",
-    password: "",
-    confirm_password: "",
-    phone: "",
-    role: "instructor",
-    agree_terms: false,
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const from_data = new FormData();
-      var agree_terms = formData.agree_terms == true ? "1" : "0";
-      from_data.append("name", formData.name);
-      from_data.append("email", formData.email);
-      from_data.append("username", formData.username);
-      from_data.append("password", formData.password);
-      from_data.append("confirm_password", formData.confirm_password);
-      from_data.append("phone", formData.phone);
-      from_data.append("role", formData.role);
-      from_data.append("agree_terms", agree_terms);
-      const result = await signUpAction(from_data);
-      if (result && result != null) {
-        if (result.success == false) {
-          if (result.message.includes("duplicate key value")) {
-            if (result.message.includes("email")) {
-              toast.error("User email already exists");
-            } else if (result.message.includes("username")) {
-              toast.error("Username already exists");
-            } else {
-              toast.error("Users already exists");
-            }
-          } else {
-            toast.error(result.message);
-          }
-        } else {
-          toast.success(result.message);
-          router.push("/verify-account");
-        }
-      } else {
-        toast.error("An Error Occured! Please Try Again Later");
-      }
-    } catch (error) {
-      console.error("Signup failed:", error);
-      toast.error("An Error Occured! Please Try Again Later");
-    } finally {
-      setIsLoading(false);
-    }
-  };
   return (
     <>
       {/* Hero Section */}
@@ -183,7 +125,7 @@ export default function BecomeInstructorPage({
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-muted">
+      <section className="py-10 bg-muted">
         <div className="container">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {[
@@ -209,7 +151,7 @@ export default function BecomeInstructorPage({
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-16 md:py-24">
+      <section id="benefits" className="py-10 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -224,49 +166,20 @@ export default function BecomeInstructorPage({
             </p>
           </div>
 
-          <div className="mt-16">
+          {/* <div className="mt-16">
             <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  icon: CreditCard,
-                  title: "Competitive Earnings",
-                  description:
-                    "Earn up to 70% revenue share on course sales and additional income through live sessions and private coaching.",
-                },
-                {
-                  icon: Users,
-                  title: "Global Audience",
-                  description:
-                    "Reach students from over 150 countries and build your reputation as an expert in your field.",
-                },
-                {
-                  icon: Lightbulb,
-                  title: "Teaching Freedom",
-                  description:
-                    "Create courses on subjects you're passionate about and teach in your own style and pace.",
-                },
-                {
-                  icon: Award,
-                  title: "Professional Growth",
-                  description:
-                    "Enhance your resume, establish yourself as an authority, and open doors to speaking engagements and consulting opportunities.",
-                },
-                {
-                  icon: MessageSquare,
-                  title: "Supportive Community",
-                  description:
-                    "Connect with fellow instructors, share best practices, and collaborate on course development.",
-                },
-                {
-                  icon: BookOpen,
-                  title: "Teaching Resources",
-                  description:
-                    "Access exclusive instructor training, course development tools, and marketing support to maximize your success.",
-                },
-              ].map((benefit, i) => (
+              {instructor_benefits.map((benefit, i) => (
                 <div key={i} className="flex flex-col items-center text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <benefit.icon className="h-8 w-8" />
+                    {(() => {
+                      const IconComponent =
+                        benefitsIconMap[
+                          benefit.icon as keyof typeof benefitsIconMap
+                        ];
+                      return IconComponent ? (
+                        <IconComponent className="h-6 w-6" />
+                      ) : null;
+                    })()}
                   </div>
                   <h3 className="mt-6 text-xl font-bold">{benefit.title}</h3>
                   <p className="mt-2 text-muted-foreground">
@@ -275,12 +188,16 @@ export default function BecomeInstructorPage({
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
+
+          <InstructorBenefitsCarousel
+            instructor_benefits={instructor_benefits}
+          />
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-muted md:py-24">
+      <section className="py-10 bg-muted md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -373,7 +290,7 @@ export default function BecomeInstructorPage({
       </section>
 
       {/* Requirements Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-24">
         <div className="container">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
             <div>
@@ -559,7 +476,7 @@ export default function BecomeInstructorPage({
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-muted md:py-24">
+      <section className="py-10 bg-muted md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -574,65 +491,14 @@ export default function BecomeInstructorPage({
             </p>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {instructor_testimonials.map((testimonial, i) => (
-              <Card key={testimonial.testimonialid} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="h-24 w-24 overflow-hidden rounded-full">
-                      <Image
-                        src={"/placeholder.svg"} // replace with actual image URL if available
-                        alt={testimonial.fullname}
-                        width={96}
-                        height={96}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <h3 className="mt-4 text-xl font-bold">
-                      {testimonial.fullname}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.instructor_role || testimonial.role}
-                    </p>
-                    <div className="mt-2 flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-primary text-primary" />
-                      <span className="text-sm">
-                        {testimonial.rate}
-                      </span>
-                    </div>
-                    <div className="mt-6">
-                      <p className="italic text-muted-foreground">
-                        "{testimonial.description}"
-                      </p>
-                    </div>
-                    {/* <div className="mt-6 flex w-full justify-between border-t pt-4">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Students
-                        </p>
-                        <p className="font-bold"></p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Courses</p>
-                        <p className="font-bold"></p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Years Teaching
-                        </p>
-                        <p className="font-bold">{i + 2}</p>
-                      </div>
-                    </div> */}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <InstructorTestimonialsCarousel
+            instructor_testimonials={instructor_testimonials}
+          />
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -692,9 +558,8 @@ export default function BecomeInstructorPage({
           </div>
         </div>
       </section>
-
       {/* Application CTA */}
-      <section id="apply" className="bg-primary py-16 md:py-24">
+      {/* <section id="apply" className="bg-primary py-10 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
@@ -712,7 +577,10 @@ export default function BecomeInstructorPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4 text-start">
+                  <form
+                    className="space-y-4 text-start"
+                    onSubmit={handleSubmit}
+                  >
                     <div className="space-y-2">
                       <label
                         htmlFor="name"
@@ -737,7 +605,7 @@ export default function BecomeInstructorPage({
                       </label>
                       <input
                         id="username"
-                        type="username"
+                        type="text"
                         name="username"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder="its_hadi"
@@ -752,7 +620,7 @@ export default function BecomeInstructorPage({
                       </label>
                       <input
                         id="email"
-                        type="email"
+                        type="text"
                         name="email"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder="haid@example.com"
@@ -767,10 +635,25 @@ export default function BecomeInstructorPage({
                       </label>
                       <input
                         id="phone"
-                        type="phone"
+                        type="text"
                         name="phone"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder="+961 ** *** ***"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="instructor_role"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Role
+                      </label>
+                      <input
+                        id="instructor_role"
+                        name="instructor_role"
+                        type="text"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        placeholder="Web Developer"
                       />
                     </div>
                     <div className="space-y-2">
@@ -800,65 +683,62 @@ export default function BecomeInstructorPage({
                     </div>
                     <div className="space-y-2">
                       <label
-                        htmlFor="experience"
+                        htmlFor="years_exp"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
                         Years of Experience
                       </label>
                       <input
-                        id="experience"
+                        id="years_exp"
                         type="number"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder="5"
                         min="1"
+                        max="40"
                       />
                     </div>
                     <div className="space-y-2">
                       <label
-                        htmlFor="courseIdea"
+                        htmlFor="linkedin"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        Course Idea
-                      </label>
-                      <textarea
-                        id="courseIdea"
-                        rows={4}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        placeholder="Briefly describe your course idea and target audience..."
-                      ></textarea>
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="portfolio"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Portfolio or LinkedIn URL
+                        LinkedIn URL
                       </label>
                       <input
-                        id="portfolio"
+                        id="linkedin"
                         type="url"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder="https://..."
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        How did you hear about us?
-                      </label>
-                      <select
-                        defaultValue={"0"}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        <option value="0" disabled>
-                          Select an option
-                        </option>
-                        <option value="search">Search Engine</option>
-                        <option value="social">Social Media</option>
-                        <option value="friend">Friend or Colleague</option>
-                        <option value="instructor">Current Instructor</option>
-                        <option value="student">As a Student</option>
-                        <option value="other">Other</option>
-                      </select>
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="terms"
+                        required
+                        checked={Boolean(formData.agree_terms)}
+                        onCheckedChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            agree_terms: checked ? true : false,
+                          })
+                        }
+                      />
+                      <Label htmlFor="terms" className="text-sm leading-tight">
+                        I agree to the{" "}
+                        <Link
+                          href="/terms"
+                          className="text-primary hover:underline"
+                        >
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          href="/privacy"
+                          className="text-primary hover:underline"
+                        >
+                          Privacy Policy
+                        </Link>
+                      </Label>
                     </div>
                     <div className="mt-6">
                       <Button
@@ -875,14 +755,14 @@ export default function BecomeInstructorPage({
             </div>
             <p className="mt-6 text-sm text-primary-foreground/70">
               We review all applications within 5-7 business days. If approved,
-              you'll receive an invitation to join our instructor community.
+              you'll receive an email.
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Resources Section */}
-      {/*<section className="py-16 md:py-24">
+      {/*<section className="py-10 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4" variant="outline">
@@ -964,7 +844,7 @@ export default function BecomeInstructorPage({
       </section>*/}
 
       {/* Final CTA */}
-      <section className="bg-muted py-16 md:py-24">
+      <section className="bg-muted py-10 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -976,7 +856,7 @@ export default function BecomeInstructorPage({
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center sm:gap-6">
               <Button size="lg" asChild>
-                <Link href="#apply">Apply to Teach</Link>
+                <Link href="/apply-as-instructor">Apply to Teach</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#benefits">Learn More</Link>
