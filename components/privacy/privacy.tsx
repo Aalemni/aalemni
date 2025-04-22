@@ -80,7 +80,7 @@ export default async function PrivacyPage() {
           <li>Request a copy of your stored data.</li>
         </ul>
         <p className="mt-2">
-          To exercise your rights, contact us at privacy@aalemni.com.
+          To exercise your rights, contact us at aalemni.co@gmail.com.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">
@@ -108,7 +108,7 @@ export default async function PrivacyPage() {
         </p>
 
         <p className="mt-8">
-          For questions or concerns, contact us at privacy@aalemni.com.
+          For questions or concerns, contact us at aalemni.co@gmail.com.
         </p>
       </div>
     </div>

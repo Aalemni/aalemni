@@ -1,7 +1,8 @@
 "use server";
 
 import CourseDetailPage from "@/components/course_by_id/course_by_id";
-import { Course } from "@/types/types"; // If you created a separate type file
+import { getCourseById } from "@/supabase/actions/course_actions";
+import { Course, Course_by_id } from "@/types/types"; // If you created a separate type file
 import { type Metadata } from "next";
 
 interface PageProps {
@@ -13,8 +14,6 @@ async function getCourse(id: string): Promise<Course> {
   return {
     id: Number.parseInt(id),
     title: "Complete React Developer in 2023",
-    subtitle:
-      "Learn React by building real projects. Includes hooks, Redux, GraphQL, and more.",
     image: "/placeholder.svg?height=400&width=1200&text=React+Course+Banner",
     instructor: {
       id: 1,
@@ -28,9 +27,6 @@ async function getCourse(id: string): Promise<Course> {
     reviewCount: 342,
     studentCount: 5840,
     level: "All Levels",
-    lastUpdated: "March 2023",
-    language: "English",
-    format: "Online", // or "In-Person" or "Hybrid"
     duration: {
       hours: 42,
       weeks: 8,
@@ -39,36 +35,17 @@ async function getCourse(id: string): Promise<Course> {
     discountPrice: "$69.99",
     discountEnds: "2023-05-30",
     tags: ["React", "JavaScript", "Web Development", "Frontend"],
-    description: `
-      This comprehensive React course will take you from beginner to advanced developer. You'll learn all the fundamentals of React, including hooks, state management, routing, and more. By the end of this course, you'll be able to build complex, production-ready React applications.
+    overview: `<h2>Course Description</h2><br>
 
-      The course is project-based, meaning you'll be building real applications as you learn. This hands-on approach ensures that you not only understand the concepts but can apply them in real-world scenarios.
+<p>This comprehensive <span><b>React</b></span> course will take you from beginner to advanced developer.</p>
+<p>You'll learn all the fundamentals of React, including hooks, state management, routing, and more.</p>
+<p>By the end of this course, you'll be able to build complex, production-ready React applications.</p>
 
-      Whether you're looking to land your first job as a React developer or enhance your existing skills, this course has everything you need to succeed.
-    `,
-    whatYouWillLearn: [
-      "Build powerful, fast, user-friendly, and reactive web apps",
-      "Apply for high-paid jobs or work as a freelancer in one of the most in-demand sectors",
-      "Provide amazing user experiences by leveraging the power of JavaScript with ease",
-      "Learn all about React Hooks and React Components",
-      "Manage complex state efficiently with Redux",
-      "Implement user authentication and authorization",
-      "Handle forms and user input validation",
-      "Connect to databases and REST APIs",
-      "Deploy your React apps to production",
-      "Understand the latest features in React 18",
-    ],
-    prerequisites: [
-      "Basic knowledge of HTML, CSS, and JavaScript",
-      "No prior React knowledge is required",
-      "A computer with internet access",
-    ],
-    targetAudience: [
-      "Beginners who want to learn React from scratch",
-      "JavaScript developers who want to expand their skillset",
-      "Developers who want to build modern, responsive web applications",
-      "Anyone interested in frontend development",
-    ],
+<p>The course is project-based, meaning you'll be building real applications as you learn.</p>
+<p>This hands-on approach ensures that you not only understand the concepts but can apply them in real-world scenarios.</p>
+
+<p>Whether you're looking to land your first job as a React developer or enhance your existing skills, this course has everything you need to succeed.</p>
+`,
     syllabus: [
       {
         title: "Week 1: Introduction to React",
@@ -184,73 +161,6 @@ async function getCourse(id: string): Promise<Course> {
         classes: [],
       },
     ],
-    resources: [
-      {
-        title: "Course Slides",
-        type: "PDF",
-        size: "15MB",
-        url: "#",
-      },
-      {
-        title: "Starter Code",
-        type: "ZIP",
-        size: "5MB",
-        url: "#",
-      },
-      {
-        title: "React Cheat Sheet",
-        type: "PDF",
-        size: "2MB",
-        url: "#",
-      },
-    ],
-    projects: [
-      {
-        title: "E-commerce Application",
-        description:
-          "Build a fully functional e-commerce application with React, Redux, and Firebase.",
-        image: "/placeholder.svg?height=200&width=360&text=E-commerce+Project",
-      },
-      {
-        title: "Social Media Dashboard",
-        description:
-          "Create a responsive social media dashboard with real-time updates using React and WebSockets.",
-        image: "/placeholder.svg?height=200&width=360&text=Dashboard+Project",
-      },
-      {
-        title: "Portfolio Website",
-        description:
-          "Design and develop a personal portfolio website with React and Tailwind CSS.",
-        image: "/placeholder.svg?height=200&width=360&text=Portfolio+Project",
-      },
-    ],
-    faqs: [
-      {
-        question: "Do I need to know JavaScript before taking this course?",
-        answer:
-          "Yes, a basic understanding of JavaScript is required. You should be familiar with concepts like variables, functions, arrays, and objects.",
-      },
-      {
-        question: "Will I receive a certificate upon completion?",
-        answer:
-          "Yes, you will receive a certificate of completion that you can add to your resume or LinkedIn profile.",
-      },
-      {
-        question: "How long do I have access to the course materials?",
-        answer:
-          "You will have lifetime access to all course materials, including any future updates.",
-      },
-      {
-        question: "Is there a refund policy?",
-        answer:
-          "Yes, we offer a 30-day money-back guarantee if you're not satisfied with the course.",
-      },
-      {
-        question: "Can I ask questions if I get stuck?",
-        answer:
-          "You can ask questions in the course discussion forum, and the instructor or teaching assistants will respond within 24-48 hours.",
-      },
-    ],
     reviews: [
       {
         id: 1,
@@ -323,6 +233,7 @@ export async function generateMetadata({
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
   const course = await getCourse(id);
-
-  return <CourseDetailPage course={course} />;
+  const coursee = await getCourseById(id);
+  console.log(coursee.data);
+  return <CourseDetailPage course={coursee.data} />;
 }

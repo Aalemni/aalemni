@@ -23,6 +23,7 @@ import {
   Category_courses,
   Course_courses_with_level,
   Feature,
+  Logged_In_User,
   PublicTestimonial,
 } from "@/types/types";
 import TestimonialsCarousel from "../testimonials/testimonials";
@@ -32,6 +33,7 @@ import FeaturedCoursesSwiper from "../courses_swiper/courses_swiper";
 
 interface HomeProps {
   user: User | null;
+  logged_in_user: Logged_In_User | null;
   categories: Category_courses[];
   featured_courses: Course_courses_with_level[];
   testimonials: PublicTestimonial[];
@@ -40,6 +42,7 @@ interface HomeProps {
 
 export default function HomePage({
   user,
+  logged_in_user,
   categories,
   featured_courses,
   testimonials,
@@ -92,7 +95,7 @@ export default function HomePage({
   return (
     <>
       {/* Hero Section */}
-      <Navbar user={user} />
+      <Navbar user={user} logged_in_user={logged_in_user} />
       <section className="relative overflow-hidden bg-gradient-to-b from-aalemni-navy/10 via-background to-background pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
         <div className="container relative z-10">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8">
@@ -277,7 +280,7 @@ export default function HomePage({
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24" id="company_features">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Badge

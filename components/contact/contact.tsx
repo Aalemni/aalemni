@@ -241,10 +241,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Email Support</h3>
                     <a
-                      href="mailto:support@aalemni.com"
+                      href="mailto:aalemni.co@gmail.com"
                       className="text-blue-600 hover:underline"
                     >
-                      support@aalemni.com
+                      aalemni.co@gmail.com
                     </a>
                   </div>
                 </div>

@@ -9,6 +9,7 @@ type GetAllCoursesResponse = {
   success: boolean;
   message: string;
   data: Course_courses[];
+  courses_count: number;
 };
 
 type GetAllCategoriesResponse = {
@@ -31,6 +32,9 @@ type PageProps = {
     maxPrice?: number;
     level?: string;
     duration?: string;
+    currentPage?: number;
+    rating?: string;
+    sort?: string;
   }>;
 };
 
@@ -40,17 +44,26 @@ export default async function Page({ searchParams }: PageProps) {
   const searchquery = params.q || "";
   const levels = params.level ? params.level.split(",") : [];
   const duration = params.duration ? params.duration.split(",") : [];
+  const rating = params.rating ? params.rating.split(",") : [];
   const minPrice = params.minPrice || -1;
   const maxPrice = params.maxPrice || -1;
+  const currentPage = params.currentPage || 1;
+  const itemsPerPage = 2  ;
+  const sortBy = params.sort || "";
+
   const courses: GetAllCoursesResponse = await getAllCourses(
     searchquery,
     categoryquery,
     minPrice,
     maxPrice,
     levels,
-    duration
+    duration,
+    rating,
+    currentPage,
+    itemsPerPage,
+    sortBy
   );
-
+  console.log(courses.data);
   const categories_res: GetAllCategoriesResponse = await getAllCategories();
   const course_levels: GetAllLevelsResponse = await getAllCourseLevels();
 
@@ -60,6 +73,8 @@ export default async function Page({ searchParams }: PageProps) {
         courses={courses.data}
         categories={categories_res.data}
         course_levels={course_levels.data}
+        itemsPerPage={itemsPerPage}
+        courses_count={courses.courses_count}
       />
     </>
   );

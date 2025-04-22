@@ -181,8 +181,19 @@
   }
 }
 
-
 .swiper-slide {
   margin-top: 50px;
   margin-bottom: 50px;
+}
+
+@media (max-width: 768px) {
+  .swiper-button-prev,
+  .swiper-button-next {
+    display: none !important;
+  }
+}
+
+#partners-testimonials .swiper-button-prev,
+#partners-testimonials .swiper-button-next {
+  display: none !important;
 }

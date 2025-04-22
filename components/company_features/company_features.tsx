@@ -32,8 +32,10 @@ export default function FeaturesCarousel({
         spaceBetween={20}
         slidesPerView={1}
         navigation
-        autoplay
-        loop
+        autoplay={{
+          delay: 3000, // optional, default is 3000ms
+          disableOnInteraction: false, // optional
+        }}        loop
         pagination={{ clickable: true }}
         breakpoints={{
           768: { slidesPerView: 2 },

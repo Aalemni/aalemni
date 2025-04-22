@@ -6,12 +6,21 @@ import { getAllCategories } from "@/supabase/actions/category_actions";
 import { getFeaturedCoursesWithDetails } from "@/supabase/actions/course_actions";
 import { getAllTestimonials } from "@/supabase/actions/public_testimonials_actions";
 import { getFeaturesByCompany } from "@/supabase/actions/company_features_actions";
+import { getLoggedInUser } from "@/supabase/actions/user_actions";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const logged_in_user_res = await getLoggedInUser(user.id);
+  const logged_in_user = logged_in_user_res.data;
 
   const categories_res = await getAllCategories();
   const categories = categories_res.data;
@@ -29,6 +38,7 @@ export default async function Page() {
     <>
       <HomePage
         user={user}
+        logged_in_user={logged_in_user[0]}
         categories={categories}
         featured_courses={featured_courses}
         testimonials={testimonials}

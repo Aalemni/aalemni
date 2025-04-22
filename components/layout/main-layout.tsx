@@ -12,12 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useTranslation } from "@/contexts/translation-context";
-import { User } from "@/types/types";
+import { Logged_In_User } from "@/types/types";
 
 interface MainLayoutProps {
   children: React.ReactNode;
   showSidebar?: boolean;
-  logged_in_user: User;
+  logged_in_user: Logged_In_User;
 }
 
 export function MainLayout({

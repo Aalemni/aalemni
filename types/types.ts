@@ -1,7 +1,6 @@
 export type Course = {
   id: number;
   title: string;
-  subtitle: string;
   image: string;
   instructor: {
     id: number;
@@ -15,9 +14,6 @@ export type Course = {
   reviewCount: number;
   studentCount: number;
   level: string;
-  lastUpdated: string;
-  language: string;
-  format: string;
   duration: {
     hours: number;
     weeks: number;
@@ -26,10 +22,7 @@ export type Course = {
   discountPrice: string;
   discountEnds: string;
   tags: string[];
-  description: string;
-  whatYouWillLearn: string[];
-  prerequisites: string[];
-  targetAudience: string[];
+  overview: string;
   syllabus: {
     title: string;
     date: string;
@@ -46,21 +39,6 @@ export type Course = {
       }[];
       moreItems: number;
     }[];
-  }[];
-  resources: {
-    title: string;
-    type: string;
-    size: string;
-    url: string;
-  }[];
-  projects: {
-    title: string;
-    description: string;
-    image: string;
-  }[];
-  faqs: {
-    question: string;
-    answer: string;
   }[];
   reviews: {
     id: number;
@@ -224,6 +202,16 @@ export type PublicTestimonial = {
   companyid: number;
 };
 
+export type Logged_In_User = {
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  phonenumber: string;
+  role: string;
+  status: string;
+};
+
 export type User = {
   userid: string;
   fullname: string;
@@ -240,6 +228,25 @@ export type Level_courses = {
   display_order: number;
 };
 
+export type Course_courses_2 = {
+  courseid: string;
+  instructorid: string;
+  name: string;
+  title: string;
+  overview: string;
+  resources: string[] | null;
+  levelid: string;
+  createdat: string;
+  updatedat: string;
+  keytopics: string[] | null;
+  previewimage: string | null;
+  price: number;
+  instructor: Instructor_courses;
+  categoryid: number;
+  category: Category_courses;
+  average_rating: number;
+};
+
 export type Course_courses = {
   courseid: string;
   instructorid: string;
@@ -249,12 +256,24 @@ export type Course_courses = {
   resources: string[] | null;
   levelid: string;
   createdat: string;
+  last_updated: string;
   keytopics: string[] | null;
   previewimage: string | null;
   price: number;
-  instructor: Instructor_courses;
-  categoryid: number;
-  category: Category_courses;
+  categoryid: string;
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  phonenumber: string;
+  role: string;
+  status: string;
+  categoryname: string;
+  color: string;
+  icon: string;
+  text_color: string;
+  average_rating: number;
+  total_duration_minutes: number;
 };
 
 export type Course_courses_with_level = {
@@ -266,6 +285,7 @@ export type Course_courses_with_level = {
   resources: string[] | null;
   levelid: string;
   createdat: string;
+  updatedat: string;
   keytopics: string[] | null;
   previewimage: string | null;
   price: number;
@@ -348,3 +368,166 @@ export type InstructorSpecialty = {
   specialityid: string;
   instructorid: string;
 };
+
+export type Course_by_id = {
+  courseid: string;
+  instructorid: string;
+  name: string;
+  title: string;
+  overview: string;
+  resources: string | null;
+  levelid: string;
+  createdat: string; // ISO date string
+  updatedat: string; // ISO date string
+  keytopics: string | null;
+  previewimage: string | null;
+  price: number;
+  categoryid: string;
+  instructor: Instructor_In_Course;
+  instructor_details: Instructor_Detail_In_Course;
+  category: Category_In_Course;
+  level: Level;
+  module: Module[];
+  totalDurationMinutes: number;
+  averageRating: number;
+  reviewCount: number;
+  reviews: Review[];
+};
+
+export type Instructor_In_Course = {
+  role: string;
+  email: string;
+  status: string;
+  userid: string;
+  fullname: string;
+  username: string;
+  phonenumber: string;
+};
+
+export type Category_In_Course = {
+  icon: string;
+  color: string;
+  categoryid: string;
+  text_color: string;
+  categoryname: string;
+};
+
+export type Level = {
+  name: string;
+  levelid: string;
+  display_order: number;
+};
+
+export type Module = {
+  name: string;
+  title: string;
+  lesson: Lesson[];
+  courseid: string;
+  moduleid: string;
+  overview: string;
+  display_order: number;
+};
+
+export type Lesson = {
+  name: string;
+  title: string;
+  page: Page[];
+  lessonid: string;
+  moduleid: string;
+  overview: string;
+  display_order: number;
+};
+
+export type Page = {
+  name: string;
+  title: string;
+  pageid: string;
+  content: string;
+  lessonid: string;
+  overview: string;
+  completed: boolean;
+  display_order: number;
+  estimatedduration: number;
+};
+
+export type Review = {
+  reviewid: string;
+  courseid: string;
+  userid: string;
+  description: string;
+  rate: number;
+  createdat: string;
+  user: Logged_In_User;
+};
+
+type Instructor_Detail_In_Course = {
+  detailid: string; // UUID
+  instructorid: string; // UUID
+  bio: string; // Bio is a string but could be null if not available
+  experience: Array<{
+    date: string; // Year or date of experience
+    company: string; // Company name
+    job_title: string; // Job title at the company
+  }>;
+  certificates: Array<{
+    date: string; // Date or year of certification
+    company: string; // Issuing company
+    job_title: string; // Job title related to the certification
+  }>;
+  role: string; // Instructor's role (e.g., "Data Science Instructor")
+  languages: string[] | null; // List of languages or null if not available
+  years_exp: number; // Years of experience
+  social_links: Array<{
+    url: string; // URL for the social platform
+    name: string; // Name of the platform (e.g., "LinkedIn")
+  }>;
+};
+
+export type Partner = {
+  logo: string | null;
+  description: string;
+  websitelink: string | null;
+  partnersince: string;
+  partnerid: string;
+  partnership_type: number;
+  userid: number;
+  users: {
+    fullname: string;
+    username: string;
+    email: string;
+    phonenumber: string;
+    role: string;
+    status: string;
+  };
+};
+
+export type PartnershipType = {
+  partnershiptypeid: number;
+  companyid: number | 1;
+  name: string;
+  icon: string;
+  description: string;
+};
+
+export interface PartnershipFeature {
+  partnershipfeatureid: number;
+  name: string;
+  icon: string ;
+  description: string;
+  companyid: number | 1;
+}
+
+export interface PartnerTestimonial {
+  testimonialid: number;
+  partnerid: string;
+  description: string;
+  rate: number | 0;
+}
+
+export interface PartnerTestimonialWithPartner {
+  testimonialid: number;
+  partnerid: string;
+  description: string;
+  rate: number;
+  partners: Partner;
+}

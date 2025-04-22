@@ -18,12 +18,15 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useTranslation } from "@/contexts/translation-context";
 import { User } from "@supabase/supabase-js"; // Import User type
 import { signOutAction } from "@/supabase/actions/auth_actions";
+import { Logged_In_User } from "@/types/types";
+import Image from "next/image";
 
 interface NavbarProps {
   user: User | null; // user can be null if not logged in
+  logged_in_user: Logged_In_User | null;
 }
 
-export function Navbar({ user }: NavbarProps) {
+export function Navbar({ user, logged_in_user }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { t, dir } = useTranslation();
@@ -85,6 +88,22 @@ export function Navbar({ user }: NavbarProps) {
     },
   ];
 
+  const navItemsWithDashboard = [...navItems];
+
+  if (
+    logged_in_user &&
+    ["admin", "instructor", "student"].includes(logged_in_user.role)
+  ) {
+    console.log("hii");
+    const dashboardPath = `/${logged_in_user.role}/dashboard`;
+    console.log(dashboardPath);
+    navItemsWithDashboard.push({
+      title: "Dashboard",
+      href: dashboardPath,
+    });
+  }
+  console.log(navItemsWithDashboard);
+
   const handleSignOut = async () => {
     try {
       const result = await signOutAction();
@@ -111,12 +130,17 @@ export function Navbar({ user }: NavbarProps) {
               className="flex items-center gap-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              <img src="https://drive.google.com/thumbnail?id=1xO6CCh7O79JHeD_w-0Ojdc1oH73M2gj_" />
+              <Image
+                src={"/aalemni_logo.png"}
+                alt="Aalemni"
+                width={180}
+                height={180}
+              />
             </Link>
 
             <div className="mt-6 flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                {navItems.map((item) => (
+                {navItemsWithDashboard.map((item) => (
                   <React.Fragment key={item.href}>
                     <Link
                       href={item.href}
@@ -188,10 +212,15 @@ export function Navbar({ user }: NavbarProps) {
           href="/"
           className={`hidden lg:flex items-center gap-2 ${dir === "rtl" ? "ml-6" : "mr-6"}`}
         >
-          <img src="https://drive.google.com/thumbnail?id=1xO6CCh7O79JHeD_w-0Ojdc1oH73M2gj_" />
+          <Image
+            src={"/aalemni_logo.png"}
+            alt="Aalemni"
+            width={180}
+            height={180}
+          />
         </Link>
         <nav className="hidden lg:flex items-center gap-6 text-sm">
-          {navItems.map((item) => (
+          {navItemsWithDashboard.map((item) => (
             <div key={item.href} className="relative group">
               {item.children ? (
                 <DropdownMenu>

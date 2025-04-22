@@ -161,7 +161,7 @@ export default async function TermsPage() {
 
         <p className="mt-8">
           For any questions or concerns, please contact us at
-          support@aalemni.com.
+          aalemni.co@gmail.com.
         </p>
 
         <p className="mt-4">

@@ -1,10 +1,10 @@
 import { createClient } from "@/supabase/utils/server";
-import { User } from "@/types/types";
+import { Logged_In_User } from "@/types/types";
 
 type GetLoggedInUserResponse = {
   success: boolean;
   message: string;
-  data: User[];
+  data: Logged_In_User[];
 };
 
 export const getLoggedInUser = async (

@@ -82,12 +82,11 @@ export default function CourseDetailLoading() {
       {/* Course Content Skeleton */}
       <div className="container py-12">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
             <TabsTrigger value="instructor">Instructor</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="faq">FAQ</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">

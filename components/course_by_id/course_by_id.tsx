@@ -25,9 +25,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Course } from "@/types/types";
+import { Course, Course_by_id } from "@/types/types";
+import moment from "moment";
+import { useState } from "react";
 
-export default function CourseDetailPage({ course }: { course: Course }) {
+export default function CourseDetailPage({ course }: { course: Course_by_id }) {
+  const totalReviews = course.reviews.length;
+
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = course.reviews.filter(
+      (review) => review.rate === rating
+    ).length;
+    const percentage =
+      totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+    return { rating, percentage };
+  });
   return (
     <div className="min-h-screen bg-background">
       {/* Course Header */}
@@ -37,9 +49,9 @@ export default function CourseDetailPage({ course }: { course: Course }) {
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
                 <Badge className="bg-aalemni-orange text-white">
-                  {course.level}
+                  {course.level.name}
                 </Badge>
-                <Badge variant="outline" className="text-white border-white">
+                {/* <Badge variant="outline" className="text-white border-white">
                   {course.format === "Online" ? (
                     <Monitor className="mr-1 h-3 w-3" />
                   ) : course.format === "In-Person" ? (
@@ -48,22 +60,22 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                     <Globe className="mr-1 h-3 w-3" />
                   )}
                   {course.format}
-                </Badge>
+                </Badge> */}
                 <Badge variant="outline" className="text-white border-white">
                   <Clock className="mr-1 h-3 w-3" />
-                  {course.duration.hours} hours
+                  {course.totalDurationMinutes / 60} hours
                 </Badge>
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold">{course.title}</h1>
-              <p className="mt-2 text-lg text-gray-200">{course.subtitle}</p>
+              {/* <p className="mt-2 text-lg text-gray-200">{course.subtitle}</p> */}
 
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 overflow-hidden rounded-full">
                     <Image
-                      src={course.instructor.image || "/placeholder.svg"}
-                      alt={course.instructor.name}
+                      src={"/placeholder.svg"}
+                      alt={course.instructor.fullname}
                       width={40}
                       height={40}
                       className="h-full w-full object-cover"
@@ -71,13 +83,13 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   </div>
                   <div>
                     <Link
-                      href={`/instructors/${course.instructor.id}`}
+                      href={`/instructors/${course.instructor.userid}`}
                       className="font-medium hover:underline"
                     >
-                      {course.instructor.name}
+                      {course.instructor.fullname}
                     </Link>
                     <p className="text-sm text-gray-300">
-                      {course.instructor.title}
+                      {course.instructor_details.role}
                     </p>
                   </div>
                 </div>
@@ -89,7 +101,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                       .map((_, i) => (
                         <svg
                           key={i}
-                          className={`h-4 w-4 ${i < Math.floor(course.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}`}
+                          className={`h-4 w-4 ${i < Math.floor(course.averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}`}
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                         >
@@ -97,25 +109,18 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                         </svg>
                       ))}
                   </div>
-                  <span className="ml-1 text-sm">{course.rating}</span>
+                  <span className="ml-1 text-sm">{course.averageRating}</span>
                   <span className="text-sm text-gray-300">
                     ({course.reviewCount} reviews)
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   <span className="text-sm">
                     {course.studentCount.toLocaleString()} students
                   </span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm">
-                    Last updated {course.lastUpdated}
-                  </span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -123,7 +128,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
               <Card className="overflow-hidden">
                 <div className="aspect-video relative">
                   <Image
-                    src={course.image || "/placeholder.svg"}
+                    src={"/placeholder.svg"}
                     alt={course.title}
                     fill
                     className="object-cover"
@@ -140,11 +145,11 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl font-bold text-aalemni-navy">
+                    {/* <span className="text-3xl font-bold text-aalemni-navy">
                       {course.discountPrice}
-                    </span>
-                    <span className="text-lg line-through text-muted-foreground">
-                      {course.price}
+                    </span> */}
+                    <span className="text-lg text-muted-foreground">
+                      {course.price} $
                     </span>
                   </div>
 
@@ -161,56 +166,19 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Duration:</span>
                       <span className="font-medium">
-                        {course.duration.hours} hours ({course.duration.weeks}{" "}
-                        weeks)
+                        {course.totalDurationMinutes / 60} hours
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Language:</span>
-                      <span className="font-medium">{course.language}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Level:</span>
-                      <span className="font-medium">{course.level}</span>
+                      <span className="font-medium">{course.level.name}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Format:</span>
-                      <span className="font-medium">{course.format}</span>
-                    </div>
-                    <div className="flex justify-between">
+                    {/* <div className="flex justify-between">
                       <span className="text-muted-foreground">Deadline:</span>
                       <span className="font-medium text-red-500">
                         Offer ends in 3 days
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t">
-                    <h3 className="font-medium mb-2">This course includes:</h3>
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-aalemni-orange" />
-                        <span>
-                          {course.duration.hours} hours on-demand video
-                        </span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-aalemni-orange" />
-                        <span>3 downloadable resources</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-aalemni-orange" />
-                        <span>Full lifetime access</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-aalemni-orange" />
-                        <span>Access on mobile and TV</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-aalemni-orange" />
-                        <span>Certificate of completion</span>
-                      </li>
-                    </ul>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>
@@ -222,31 +190,52 @@ export default function CourseDetailPage({ course }: { course: Course }) {
       {/* Course Content */}
       <div className="container py-12">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
             <TabsTrigger value="instructor">Instructor</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="faq">FAQ</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-              <div className="md:col-span-2 space-y-8">
+            <div className="grid grid-cols-1">
+              <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">
+                  {/* <h2 className="text-2xl font-bold mb-4">
                     Course Description
-                  </h2>
-                  <div className="prose max-w-none">
+                  </h2> */}
+                  {/* <div className="prose max-w-none">
                     {course.description.split("\n\n").map((paragraph, i) => (
                       <p key={i} className="mb-4">
                         {paragraph}
                       </p>
                     ))}
-                  </div>
+                  </div> */}
+                  <div
+                    className="
+                    rendered-html
+                    [&_h1]:text-3xl [&_h1]:font-bold
+                    [&_h2]:text-2xl [&_h2]:font-semibold
+                    [&_h3]:text-xl [&_h3]:font-semibold
+                    [&_h4]:text-lg [&_h4]:font-medium
+                    [&_h5]:text-base [&_h5]:font-medium
+                    [&_h6]:text-sm [&_h6]:font-medium
+
+                    [&_p]:text-base [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_span]:text-base
+                    [&_strong]:font-bold
+                    [&_em]:italic
+                    [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
+                    [&_li]:mb-1
+                    [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
+                    "
+                    dangerouslySetInnerHTML={{ __html: course.overview }}
+                  />
                 </div>
 
-                <div>
+                {/* <div>
                   <h2 className="text-2xl font-bold mb-4">What You'll Learn</h2>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {course.whatYouWillLearn.map((item, i) => (
@@ -256,9 +245,9 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <h2 className="text-2xl font-bold mb-4">Course Projects</h2>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {course.projects.map((project, i) => (
@@ -280,10 +269,10 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                       </Card>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
 
-              <div className="space-y-8">
+              {/* <div className="space-y-8">
                 <div>
                   <h2 className="text-xl font-bold mb-4">Prerequisites</h2>
                   <ul className="space-y-2">
@@ -393,12 +382,13 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                     ))}
                   </div>
                 </div>
-              </div>
+              
+              </div> */}
             </div>
 
             <div>
               <h2 className="text-2xl font-bold mb-6">Related Courses</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {course.relatedCourses.map((relatedCourse) => (
                   <Link
                     key={relatedCourse.id}
@@ -455,7 +445,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                     </Card>
                   </Link>
                 ))}
-              </div>
+              </div> */}
             </div>
           </TabsContent>
 
@@ -463,7 +453,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
             <div className="bg-white dark:bg-gray-950 rounded-lg border p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                 <h2 className="text-3xl font-bold">Course Syllabus</h2>
-                <div className="flex items-center gap-4 mt-4 md:mt-0">
+                {/* <div className="flex items-center gap-4 mt-4 md:mt-0">
                   <div className="relative">
                     <select className="pl-4 pr-10 py-2 border rounded-lg appearance-none bg-background focus:outline-none focus:ring-2 focus:ring-aalemni-orange">
                       <option>Cohort: Apr 12 - Apr 20</option>
@@ -475,121 +465,85 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   <Button variant="link" className="text-aalemni-orange">
                     Expand all modules
                   </Button>
-                </div>
+                </div> */}
               </div>
-
               <Accordion type="single" collapsible className="w-full space-y-4">
-                {course.syllabus.map((week, weekIndex) => (
+                {course.module?.map((module, moduleIndex) => (
                   <AccordionItem
-                    key={weekIndex}
-                    value={`week-${weekIndex}`}
+                    key={moduleIndex}
+                    value={`module-${moduleIndex}`}
                     className="border rounded-lg overflow-hidden"
                   >
                     <AccordionTrigger className="px-6 py-4 hover:bg-muted/50 [&[data-state=open]>div>svg]:rotate-90">
                       <div className="flex items-center w-full">
                         <div className="flex-1 flex items-center gap-2">
-                          <span className="font-semibold">
-                            Week {weekIndex + 1}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {week.date}
+                          <span className="font-semibold text-lg">
+                            Module {moduleIndex + 1}: {module.title}
                           </span>
                         </div>
-                        <ChevronRight className="h-5 w-5 transition-transform duration-200" />
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-0 pt-0 pb-0">
-                      {week.classes.length > 0 ? (
+                      {module.lesson?.length > 0 ? (
                         <div className="border-t">
-                          {week.classes.map((classItem, classIndex) => (
-                            <div
-                              key={classIndex}
-                              className="border-b last:border-b-0"
-                            >
-                              <div className="px-6 py-4 bg-muted/30">
-                                <h3 className="font-semibold text-lg">
-                                  {classItem.title}
-                                </h3>
-                              </div>
-                              <div className="divide-y">
-                                {classItem.sessions.map(
-                                  (session, sessionIndex) => (
-                                    <div
-                                      key={sessionIndex}
-                                      className="px-6 py-4 flex flex-col md:flex-row md:items-center gap-2"
-                                    >
-                                      <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 bg-aalemni-orange/10 text-aalemni-orange rounded-lg">
-                                        <span className="text-xs font-semibold">
-                                          {session.dayOfWeek ||
-                                            classItem.dayOfWeek}
-                                        </span>
-                                        <span className="text-sm font-bold">
-                                          {session.date || classItem.date}
-                                        </span>
-                                      </div>
-                                      <div className="flex-1 ml-0 md:ml-4">
-                                        <p className="font-medium">
-                                          {session.title}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                          {session.time}
-                                        </p>
-                                      </div>
-                                      <Badge
-                                        variant="outline"
-                                        className="flex-shrink-0 gap-1"
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className="w-full px-2 py-4"
+                          >
+                            {module.lesson.map((lesson, lessonIndex) => (
+                              <AccordionItem
+                                key={lessonIndex}
+                                value={`lesson-${moduleIndex}-${lessonIndex}`}
+                                className="border-b last:border-b-0"
+                              >
+                                <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:bg-muted/40 [&[data-state=open]>div>svg]:rotate-90">
+                                  <span className="font-semibold text-base">
+                                    Lesson {lessonIndex + 1}: {lesson.title}
+                                  </span>
+                                </AccordionTrigger>
+                                <AccordionContent className="divide-y">
+                                  {lesson.page ? (
+                                    lesson.page.map((page, pageIndex) => (
+                                      <div
+                                        key={pageIndex}
+                                        className="px-6 py-4 flex flex-col md:flex-row md:items-center gap-2"
                                       >
-                                        {session.type === "Online" ? (
-                                          <Monitor className="h-3 w-3" />
-                                        ) : (
-                                          <MapPin className="h-3 w-3" />
-                                        )}
-                                        {session.type}
-                                      </Badge>
+                                        <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 bg-aalemni-orange/10 text-aalemni-orange rounded-lg">
+                                          <span className="text-sm font-bold">
+                                            {pageIndex + 1}
+                                          </span>
+                                        </div>
+                                        <div className="flex-1 ml-0 md:ml-4">
+                                          <p className="font-medium">
+                                            {page.title}
+                                          </p>
+                                          {page.estimatedduration && (
+                                            <p className="text-sm text-muted-foreground">
+                                              Duration: {page.estimatedduration}{" "}
+                                              min
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="px-6 py-8 text-center border-t">
+                                      <p className="text-muted-foreground">
+                                        This lesson doesn’t contain any pages
+                                        yet yet.
+                                      </p>
                                     </div>
-                                  )
-                                )}
-                                {classItem.moreItems > 0 && (
-                                  <div className="px-6 py-3 bg-muted/20 text-center">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-muted-foreground"
-                                    >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="mr-1"
-                                      >
-                                        <rect
-                                          width="18"
-                                          height="18"
-                                          x="3"
-                                          y="3"
-                                          rx="2"
-                                        />
-                                        <path d="M9 12h6" />
-                                        <path d="M12 9v6" />
-                                      </svg>
-                                      {classItem.moreItems} more items
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                                  )}
+                                </AccordionContent>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
                         </div>
                       ) : (
                         <div className="px-6 py-8 text-center border-t">
                           <p className="text-muted-foreground">
-                            Content for this week will be available soon.
+                            This module doesn’t contain any lessons yet.
                           </p>
                         </div>
                       )}
@@ -599,7 +553,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
               </Accordion>
             </div>
 
-            <div className="bg-aalemni-navy text-white rounded-lg p-6">
+            {/* <div className="bg-aalemni-navy text-white rounded-lg p-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-2">Course Schedule</h3>
@@ -648,7 +602,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   </ul>
                 </div>
               </div>
-            </div>
+            </div> */}
           </TabsContent>
 
           <TabsContent value="instructor">
@@ -657,20 +611,20 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                 <div className="flex flex-col items-center text-center">
                   <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-aalemni-orange/20">
                     <Image
-                      src={course.instructor.image || "/placeholder.svg"}
-                      alt={course.instructor.name}
+                      src={"/placeholder.svg"}
+                      alt={course.instructor.fullname}
                       fill
                       className="object-cover"
                     />
                   </div>
                   <h2 className="mt-4 text-2xl font-bold">
-                    {course.instructor.name}
+                    {course.instructor.fullname}
                   </h2>
                   <p className="text-muted-foreground">
-                    {course.instructor.title}
+                    {course.instructor_details.role}
                   </p>
 
-                  <div className="mt-4 flex items-center justify-center gap-2">
+                  {/* <div className="mt-4 flex items-center justify-center gap-2">
                     <div className="flex items-center">
                       <svg
                         className="h-5 w-5 text-yellow-400 fill-yellow-400"
@@ -686,14 +640,14 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                     <span className="text-sm text-muted-foreground">
                       ({course.instructor.reviewCount} reviews)
                     </span>
-                  </div>
+                  </div> */}
 
                   <div className="mt-6 w-full">
                     <Button
                       className="w-full bg-aalemni-orange hover:bg-aalemni-orange/90 text-white"
                       asChild
                     >
-                      <Link href={`/instructors/${course.instructor.id}`}>
+                      <Link href={`/instructors/${course.instructor.userid}`}>
                         View Full Profile
                       </Link>
                     </Button>
@@ -706,28 +660,30 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   About the Instructor
                 </h2>
                 <div className="prose max-w-none">
-                  <p>
-                    Former Google engineer with 10+ years of experience in web
-                    development. Passionate about teaching modern JavaScript
-                    frameworks and helping students build real-world
-                    applications.
-                  </p>
-                  <p>
-                    After working at Google and several tech startups, I decided
-                    to focus on teaching and helping others build their skills
-                    in web development. My teaching philosophy centers on
-                    practical, project-based learning. I believe that the best
-                    way to learn programming is by building real applications
-                    and solving real problems.
-                  </p>
-                  <p>
-                    I specialize in modern JavaScript frameworks like React and
-                    Node.js, and I'm constantly updating my courses to reflect
-                    the latest industry trends and best practices. Whether
-                    you're a complete beginner or an experienced developer
-                    looking to expand your skills, my goal is to help you become
-                    a confident and competent web developer.
-                  </p>
+                  <div
+                    className="
+                    rendered-html
+                    [&_h1]:text-3xl [&_h1]:font-bold
+                    [&_h2]:text-2xl [&_h2]:font-semibold
+                    [&_h3]:text-xl [&_h3]:font-semibold
+                    [&_h4]:text-lg [&_h4]:font-medium
+                    [&_h5]:text-base [&_h5]:font-medium
+                    [&_h6]:text-sm [&_h6]:font-medium
+
+                    [&_p]:text-base [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_span]:text-base
+                    [&_strong]:font-bold
+                    [&_em]:italic
+                    [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
+                    [&_li]:mb-1
+                    [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
+                    "
+                    dangerouslySetInnerHTML={{
+                      __html: course.instructor_details.bio,
+                    }}
+                  />
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -790,7 +746,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   </Card>
                 </div>
 
-                <div className="mt-8">
+                {/* <div className="mt-8">
                   <h3 className="text-xl font-bold mb-4">
                     Other Courses by {course.instructor.name}
                   </h3>
@@ -840,7 +796,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                       </Link>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </TabsContent>
@@ -851,7 +807,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                 <div className="rounded-lg border p-6">
                   <div className="flex flex-col items-center text-center">
                     <div className="text-5xl font-bold text-aalemni-navy">
-                      {course.rating}
+                      {course.averageRating}
                     </div>
                     <div className="mt-2 flex">
                       {Array(5)
@@ -859,7 +815,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                         .map((_, i) => (
                           <svg
                             key={i}
-                            className={`h-5 w-5 ${i < Math.floor(course.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                            className={`h-5 w-5 ${i < Math.floor(course.averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                           >
@@ -873,41 +829,29 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                   </div>
 
                   <div className="mt-6 space-y-4">
-                    {[5, 4, 3, 2, 1].map((rating) => {
-                      const percentage =
-                        rating === 5
-                          ? 78
-                          : rating === 4
-                            ? 15
-                            : rating === 3
-                              ? 5
-                              : rating === 2
-                                ? 1
-                                : 1;
-                      return (
-                        <div key={rating} className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <span>{rating}</span>
-                            <svg
-                              className="h-4 w-4 text-yellow-400 fill-yellow-400"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                            </svg>
-                          </div>
-                          <div className="h-2 flex-1 rounded-full bg-muted">
-                            <div
-                              className="h-2 rounded-full bg-aalemni-orange"
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {percentage}%
-                          </span>
+                    {ratingDistribution.map(({ rating, percentage }) => (
+                      <div key={rating} className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <span>{rating}</span>
+                          <svg
+                            className="h-4 w-4 text-yellow-400 fill-yellow-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
                         </div>
-                      );
-                    })}
+                        <div className="h-2 flex-1 rounded-full bg-muted">
+                          <div
+                            className="h-2 rounded-full bg-aalemni-orange"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {percentage}%
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -915,19 +859,24 @@ export default function CourseDetailPage({ course }: { course: Course }) {
               <div className="md:col-span-2">
                 <div className="space-y-6">
                   {course.reviews.map((review) => (
-                    <div key={review.id} className="rounded-lg border p-6">
+                    <div
+                      key={review.reviewid}
+                      className="rounded-lg border p-6"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 overflow-hidden rounded-full">
                           <Image
-                            src={review.image || "/placeholder.svg"}
-                            alt={review.name}
+                            src={"/placeholder.svg"}
+                            alt={review.user.fullname}
                             width={40}
                             height={40}
                             className="h-full w-full object-cover"
                           />
                         </div>
                         <div>
-                          <h4 className="font-medium">{review.name}</h4>
+                          <h4 className="font-medium">
+                            {review.user.fullname}
+                          </h4>
                           <div className="flex items-center gap-2">
                             <div className="flex">
                               {Array(5)
@@ -935,7 +884,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                                 .map((_, i) => (
                                   <svg
                                     key={i}
-                                    className={`h-4 w-4 ${i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                                    className={`h-4 w-4 ${i < review.rate ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                   >
@@ -944,12 +893,12 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                                 ))}
                             </div>
                             <span className="text-sm text-muted-foreground">
-                              {review.date}
+                              {moment(review.createdat).format("YYYY-MM-DD")}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <p className="mt-4">{review.comment}</p>
+                      <p className="mt-4">{review.description}</p>
                     </div>
                   ))}
                 </div>
@@ -957,38 +906,6 @@ export default function CourseDetailPage({ course }: { course: Course }) {
                 <div className="mt-6 flex justify-center">
                   <Button variant="outline">Load More Reviews</Button>
                 </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="faq">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-6">
-                Frequently Asked Questions
-              </h2>
-
-              <Accordion type="single" collapsible className="w-full">
-                {course.faqs.map((faq, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`}>
-                    <AccordionTrigger className="text-left font-medium">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent>{faq.answer}</AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-
-              <div className="mt-8 rounded-lg border p-6 bg-muted/30">
-                <h3 className="text-xl font-bold mb-2">
-                  Still have questions?
-                </h3>
-                <p className="mb-4">
-                  If you have any other questions about this course, please
-                  don't hesitate to contact us.
-                </p>
-                <Button className="bg-aalemni-orange hover:bg-aalemni-orange/90 text-white">
-                  Contact Support
-                </Button>
               </div>
             </div>
           </TabsContent>
@@ -1010,7 +927,7 @@ export default function CourseDetailPage({ course }: { course: Course }) {
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button className="bg-aalemni-orange hover:bg-aalemni-orange/90 text-white">
-                Enroll Now for {course.discountPrice}
+                Enroll Now for {course.price} $
               </Button>
               <Button
                 variant="outline"

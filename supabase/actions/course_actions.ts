@@ -2,6 +2,7 @@
 
 import { createClient } from "@/supabase/utils/server";
 import {
+  Course_by_id,
   Course_courses,
   Course_courses_with_level,
   CoursePayload,
@@ -80,6 +81,7 @@ type GetAllCoursesResponse = {
   success: boolean;
   message: string;
   data: Course_courses[];
+  courses_count: number;
 };
 
 type CourseDuration = {
@@ -97,72 +99,42 @@ type GetAllCoursesResponseWithLevel = {
   message: string;
   data: Course_courses_with_level[];
 };
-// export const getAllCourses = async (
-//   query = "",
-//   categories: string[] = [],
-//   minPrice: number = -1,
-//   maxPrice: number = -1,
-//   levels: string[] = [],
-//   duration: string[] = []
-// ): Promise<GetAllCoursesResponse> => {
-//   const validCategories = categories.filter((categoryId) => isUuid(categoryId));
-//   const validLevels = levels.filter((levelId) => isUuid(levelId));
 
-//   const supabase = await createClient();
-//   console.log(categories);
+type GetCourseByID = {
+  success: boolean;
+  message: string;
+  data: Course_by_id;
+};
 
-//   let queryBuilder = supabase
-//     .from("courses")
-//     .select("*, instructor:instructorid(*), category:categoryid(*)")
-//     .ilike("title", `%${query}%`);
-
-//   if (validCategories.length > 0) {
-//     console.log("Filtering by categories:", validCategories);
-//     queryBuilder = queryBuilder.in("categoryid", validCategories);
-//   }
-
-//   if (validLevels.length > 0) {
-//     console.log("Filtering by levels:", validLevels);
-//     queryBuilder = queryBuilder.in("levelid", validLevels);
-//   }
-
-//   if (minPrice == -1 || maxPrice == -1) {
-//   } else {
-//     console.log("Filtering by price:", { minPrice, maxPrice });
-//     queryBuilder = queryBuilder.gte("price", minPrice).lte("price", maxPrice);
-//   }
-
-//   const { data, error } = await queryBuilder;
-
-//   if (error) {
-//     return { success: false, message: error.message, data: [] };
-//   }
-
-//   return {
-//     success: true,
-//     message: "Courses retrieved successfully",
-//     data: data || [],
-//   };
-// };
-
-export const getAllCourses = async (
+export const getAllCourses_OLD = async (
   query = "",
   categories: string[] = [],
   minPrice: number = -1,
   maxPrice: number = -1,
   levels: string[] = [],
   duration: string[] = [],
-  ratings: string[] = []
+  ratings: string[] = [],
+  currentPage = 1,
+  pageSize = 9,
+  sortBy = "none"
 ): Promise<GetAllCoursesResponse> => {
   const supabase = await createClient();
 
   const validCategories = categories.filter(isUuid);
   const validLevels = levels.filter(isUuid);
 
+  const from = (currentPage - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   let courseQuery = supabase
     .from("courses")
     .select("*, instructor:instructorid(*), category:categoryid(*)")
-    .ilike("title", `%${query}%`);
+    .or(`title.ilike.%${query}%,overview.ilike.%${query}%`)
+
+
+  const { data, count } = await supabase
+    .from("courses")
+    .select("*", { count: "exact" });
 
   if (validCategories.length) {
     courseQuery = courseQuery.in("categoryid", validCategories);
@@ -186,14 +158,12 @@ export const getAllCourses = async (
   const { data: durationsData, error: durationError } = durationsResult;
   const { data: ratingsData, error: ratingsError } = ratingsResult;
 
-  console.log(courses);
-  console.log(durationsData);
-  console.log(ratingsData);
   if (courseError || !courses) {
     return {
       success: false,
       message: courseError?.message || "Failed to fetch courses",
       data: [],
+      courses_count: 0,
     };
   }
 
@@ -202,6 +172,7 @@ export const getAllCourses = async (
       success: false,
       message: durationError?.message || "Failed to fetch course durations",
       data: [],
+      courses_count: 0,
     };
   }
 
@@ -210,6 +181,7 @@ export const getAllCourses = async (
       success: false,
       message: ratingsError?.message || "Failed to fetch course ratings",
       data: [],
+      courses_count: 0,
     };
   }
 
@@ -219,12 +191,16 @@ export const getAllCourses = async (
       d.total_duration_minutes,
     ])
   );
-
   const ratingMap = new Map<string, number>(
-    ratingsData.map((r: CourseRating) => [
-      r.courseid,
-      Number(r.average_rating.toFixed(1)),
-    ])
+    courses.map((course) => {
+      const courseRating = ratingsData.find(
+        (r: CourseRating) => r.courseid === course.courseid
+      );
+      const average = courseRating
+        ? Number(courseRating.average_rating.toFixed(1))
+        : 0; // or `null`
+      return [course.courseid, average];
+    })
   );
 
   const durationRangesInMinutes = duration.map((range) => {
@@ -237,28 +213,135 @@ export const getAllCourses = async (
 
   const selectedRatings = ratings.map(Number);
 
-  const finalCourses = courses.filter((course) => {
-    const totalMinutes = durationMap.get(course.courseid);
-    const avgRating = ratingMap.get(course.courseid);
+  const finalCourses = courses
+    .map((course) => {
+      const totalMinutes = durationMap.get(course.courseid);
+      const avgRating = ratingMap.get(course.courseid);
 
-    if (!totalMinutes || !avgRating) return false;
+      if (!totalMinutes || (!avgRating && avgRating !== 0)) {
+        return null;
+      }
 
-    const matchesDuration =
-      durationRangesInMinutes.length === 0 ||
-      durationRangesInMinutes.some(
-        (range) => totalMinutes >= range.min && totalMinutes <= range.max
-      );
+      const matchesDuration =
+        durationRangesInMinutes.length === 0 ||
+        durationRangesInMinutes.some(
+          (range) => totalMinutes >= range.min && totalMinutes <= range.max
+        );
 
-    const matchesRating =
-      selectedRatings.length === 0 || selectedRatings.includes(avgRating);
+      const matchesRating =
+        selectedRatings.length === 0 || selectedRatings.includes(avgRating);
 
-    return matchesDuration && matchesRating;
+      if (!matchesDuration || !matchesRating) return null;
+
+      return {
+        ...course,
+        average_rating: avgRating,
+      };
+    })
+    .filter(Boolean);
+
+  let sortedCourses = finalCourses;
+  sortedCourses = [...finalCourses].sort((a, b) => {
+    switch (sortBy) {
+      case "none":
+        return 0; // No sorting
+      case "rating-low":
+        return a.average_rating - b.average_rating;
+      case "rating-high":
+        return b.average_rating - a.average_rating;
+      case "newest":
+        return (
+          new Date(b.createdat).getTime() - new Date(a.createdat).getTime()
+        );
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      default:
+        return 0;
+    }
   });
+  console.log("sortedCourses");
+  console.log(sortedCourses);
 
   return {
     success: true,
     message: "Courses retrieved successfully",
-    data: finalCourses,
+    data: sortedCourses,
+    courses_count: count ?? 0,
+  };
+};
+
+export const getAllCourses = async (
+  query = "",
+  categories: string[] = [],
+  minPrice: number = -1,
+  maxPrice: number = -1,
+  levels: string[] = [],
+  duration: string[] = [],
+  ratings: string[] = [],
+  currentPage = 1,
+  pageSize = 9,
+  sortBy = "none"
+): Promise<GetAllCoursesResponse> => {
+  const supabase = await createClient();
+
+  const validCategories = categories.filter(isUuid);
+  const validLevels = levels.filter(isUuid);
+  const selectedRatings = ratings.map(Number);
+
+  let minDuration: number | null = null;
+  let maxDuration: number | null = null;
+  if (duration.length > 0) {
+    const allDurations = duration
+      .map((range) => range.split("-").map(Number))
+      .map(([minH, maxH]) => ({
+        min: minH * 60,
+        max: maxH ? maxH * 60 : Infinity,
+      }));
+    minDuration = Math.min(...allDurations.map((d) => d.min));
+    maxDuration = Math.max(
+      ...allDurations.map((d) => (d.max === Infinity ? 0 : d.max))
+    );
+    if (maxDuration === 0) maxDuration = null;
+  }
+
+  const actualMinPrice = minPrice !== -1 ? minPrice : null;
+  const actualMaxPrice = maxPrice !== -1 ? maxPrice : null;
+
+  const { data, error } = await supabase.rpc("get_filtered_courses", {
+    in_text: query.trim() || null,
+    in_categories: validCategories.length ? validCategories : null,
+    in_min_price: actualMinPrice,
+    in_max_price: actualMaxPrice,
+    in_levels: validLevels.length ? validLevels : null,
+    in_min_duration: minDuration,
+    in_max_duration: maxDuration,
+    in_ratings: selectedRatings.length ? selectedRatings : null,
+    in_current_page: currentPage,
+    in_page_size: pageSize,
+    in_sort_by: sortBy,
+    in_user_id: null,
+  });
+
+  if (error || !data) {
+    return {
+      success: false,
+      message: error?.message || "Failed to fetch courses",
+      data: [],
+      courses_count: 0,
+    };
+  }
+
+  const { data: courses_data, count } = await supabase
+    .from("courses")
+    .select("*", { count: "exact" });
+
+  return {
+    success: true,
+    message: "Courses retrieved successfully",
+    data,
+    courses_count: count ?? 0,
   };
 };
 
@@ -508,5 +591,154 @@ export const getCourseSyllabus = async (
     success: true,
     message: "Syllabus fetched successfully.",
     data: formattedModules,
+  };
+};
+
+// export const getCourseById = async () => {
+
+// };
+
+const emptyCourse: Course_by_id = {
+  courseid: "",
+  instructorid: "",
+  name: "",
+  title: "",
+  overview: "",
+  resources: null,
+  levelid: "",
+  createdat: "",
+  updatedat: "",
+  keytopics: null,
+  previewimage: null,
+  price: 0,
+  categoryid: "",
+  instructor: {
+    role: "",
+    email: "",
+    status: "",
+    userid: "",
+    fullname: "",
+    username: "",
+    phonenumber: "",
+  },
+  instructor_details: {
+    detailid: "",
+    instructorid: "",
+    bio: "",
+    experience: [],
+    certificates: [],
+    role: "",
+    languages: null,
+    years_exp: 0,
+    social_links: [],
+  },
+  category: {
+    icon: "",
+    color: "",
+    categoryid: "",
+    text_color: "",
+    categoryname: "",
+  },
+  level: {
+    name: "",
+    levelid: "",
+    display_order: 0,
+  },
+  module: [],
+  totalDurationMinutes: 0,
+  averageRating: 0,
+  reviewCount: 0,
+  reviews: [],
+};
+
+export const getCourseById = async (
+  courseId: string
+): Promise<GetCourseByID> => {
+  const supabase = await createClient();
+  const { data: courseData, error: courseError } = await supabase
+    .from("courses")
+    .select(
+      `
+      *,
+      instructor:instructorid(*), category:categoryid(*), level:levelid(*),
+      module:module (
+        *,
+        lesson:lesson (
+          *,
+          page:page (*)
+        )
+      )
+    `
+    )
+    .eq("courseid", courseId)
+    .single();
+
+  console.log(courseError);
+  if (courseError || !courseData) {
+    return {
+      success: false,
+      message: courseError?.message || "Course not found",
+      data: emptyCourse,
+    };
+  }
+  const { data: instructor_details, error: instructorError } = await supabase
+    .from("instructor_details")
+    .select("*")
+    .eq("instructorid", courseData?.instructorid)
+    .single();
+
+  const { data: durationData } = await supabase
+    .rpc("get_course_durations")
+    .eq("courseid", courseId);
+
+  const totalDuration = durationData?.[0]?.total_duration_minutes ?? 0;
+
+  const { data: ratingsData } = await supabase
+    .rpc("get_course_ratings")
+    .eq("courseid", courseId);
+
+  const averageRating = ratingsData?.[0]?.average_rating ?? 0;
+
+  const { count: reviewCount } = await supabase
+    .from("course_reviews")
+    .select("rate", { count: "exact", head: true })
+    .eq("courseid", courseId);
+
+  const { data: reviewsData, error: reviewsError } = await supabase
+    .from("course_reviews")
+    .select(
+      `
+      *,
+      user:userid (
+        *
+      )
+    `
+    )
+    .eq("courseid", courseId)
+    .order("createdat", { ascending: false });
+
+  if (reviewsError) {
+    return {
+      success: false,
+      message: reviewsError.message,
+      data: emptyCourse,
+    };
+  }
+
+  let fullCourseData = {};
+  if (courseError || instructorError) {
+    console.error("Error fetching data:", courseError || instructorError);
+  }
+  return {
+    success: true,
+    message: "Course data retrieved successfully",
+    data: {
+      ...courseData,
+      instructor_details,
+      totalDurationMinutes: totalDuration,
+      averageRating,
+      reviewCount,
+      reviews: reviewsData,
+    },
   };
 };

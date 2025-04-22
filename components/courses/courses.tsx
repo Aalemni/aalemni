@@ -29,12 +29,16 @@ type CoursesPageProps = {
   courses: Course_courses[];
   categories: Category_courses[];
   course_levels: Level_courses[];
+  itemsPerPage: number;
+  courses_count: number;
 };
 
 export default function CoursesPage({
   courses,
   categories,
   course_levels,
+  itemsPerPage,
+  courses_count,
 }: CoursesPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,6 +50,9 @@ export default function CoursesPage({
   const [isNoPriceChecked, setIsNoPriceChecked] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 200]);
   const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
+  const [selectedRates, setselectedRates] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSort, setSelectedSort] = useState("none");
 
   useEffect(() => {
     if (searchParams) {
@@ -64,6 +71,12 @@ export default function CoursesPage({
 
     const durationsFromURL = searchParams.get("duration")?.split(",") || [];
     setSelectedDurations(durationsFromURL);
+
+    const rateFromURL = searchParams.get("rate")?.split(",").map(Number) || [];
+    setselectedRates(rateFromURL);
+
+    const sortFromURL = searchParams.get("sort") || "none";
+    setSelectedSort(sortFromURL);
   }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -119,6 +132,22 @@ export default function CoursesPage({
     });
   };
 
+  const handleRateChange = (checked: boolean, rate: number) => {
+    setselectedRates((prevSelectedRates) => {
+      let updatedRates = [...prevSelectedRates];
+
+      if (checked) {
+        if (!updatedRates.includes(rate)) {
+          updatedRates.push(rate);
+        }
+      } else {
+        updatedRates = updatedRates.filter((item) => item !== rate);
+      }
+
+      return updatedRates;
+    });
+  };
+
   const handleRangeChange = (value: number[]) => {
     setPriceRange(value);
   };
@@ -132,20 +161,21 @@ export default function CoursesPage({
     }
   };
 
+  function updateParam<T>(params: URLSearchParams, key: string, values: T[]) {
+    if (values.length > 0) {
+      params.set(key, values.join(","));
+    } else {
+      params.delete(key);
+    }
+  }
+
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (selectedCategories.length > 0) {
-      params.set("category", selectedCategories.join(","));
-    } else {
-      params.delete("category");
-    }
-
-    if (selectedLevels.length > 0) {
-      params.set("level", selectedLevels.join(","));
-    } else {
-      params.delete("level");
-    }
+    updateParam(params, "category", selectedCategories);
+    updateParam(params, "level", selectedLevels);
+    updateParam(params, "duration", selectedDurations);
+    updateParam(params, "rating", selectedRates);
 
     if (isNoPriceChecked) {
     } else {
@@ -157,19 +187,57 @@ export default function CoursesPage({
         params.set("maxPrice", priceRange[1].toString());
       }
     }
-
-    if (selectedDurations.length > 0) {
-      params.set("duration", selectedDurations.join(","));
-    } else {
-      params.delete("duration");
-    }
+    params.delete("currentPage");
 
     router.push(`?${params.toString()}`);
   };
 
   const handleReset = () => {
-
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("category");
+    params.delete("level");
+    params.delete("minPrice");
+    params.delete("maxPrice");
+    params.delete("duration");
+    params.delete("rating");
+    params.delete("q");
+    router.push(`?${params.toString()}`);
   };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("currentPage", page.toString());
+    setCurrentPage(page);
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSortChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set("sort", value);
+    } else {
+      params.delete("sort");
+    }
+    params.delete("currentPage");
+    router.push(`?${params.toString()}`);
+  };
+
+  const totalPages = Math.ceil(courses_count / itemsPerPage);
+  console.log("courses_count");
+  console.log(courses_count);
+  console.log("itemsPerPage");
+  console.log(itemsPerPage);
+  console.log("totalPages");
+  console.log(totalPages);
+  function getInitials(fullname: string): string {
+    const words = fullname.trim().split(/\s+/);
+    if (words.length >= 2) {
+      return words[0][0] + words[1][0];
+    } else if (words.length === 1) {
+      return words[0].substring(0, 2);
+    }
+    return "";
+  }
 
   return (
     <>
@@ -377,33 +445,41 @@ export default function CoursesPage({
                     <AccordionTrigger>Rating</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2">
-                        {[4.5, 4.0, 3.5, 3.0].map((rating) => (
-                          <div
-                            key={rating}
-                            className="flex items-center space-x-2"
-                          >
-                            <Checkbox id={`rating-${rating}`} />
-                            <label
-                              htmlFor={`rating-${rating}`}
-                              className="flex items-center space-x-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        {[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map(
+                          (rating) => (
+                            <div
+                              key={rating}
+                              className="flex items-center space-x-2"
                             >
-                              <span>{rating}+</span>
-                              <div className="flex">
-                                {Array(Math.floor(rating))
-                                  .fill(null)
-                                  .map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className="h-3 w-3 fill-primary text-primary"
-                                    />
-                                  ))}
-                                {rating % 1 !== 0 && (
-                                  <Star className="h-3 w-3 fill-primary text-primary" />
-                                )}
-                              </div>
-                            </label>
-                          </div>
-                        ))}
+                              <Checkbox
+                                id={`rating-${rating}`}
+                                checked={selectedRates.includes(rating)}
+                                onCheckedChange={(checked) => {
+                                  handleRateChange(checked === true, rating);
+                                }}
+                              />
+                              <label
+                                htmlFor={`rating-${rating}`}
+                                className="flex items-center space-x-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                <span>{rating}+</span>
+                                <div className="flex">
+                                  {Array(Math.floor(rating))
+                                    .fill(null)
+                                    .map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className="h-3 w-3 fill-primary text-primary"
+                                      />
+                                    ))}
+                                  {rating % 1 !== 0 && (
+                                    <Star className="h-3 w-3 fill-primary text-primary" />
+                                  )}
+                                </div>
+                              </label>
+                            </div>
+                          )
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -434,12 +510,24 @@ export default function CoursesPage({
                       <span className="sr-only">Grid view</span>
                     </Button>
                   </div>
-                  <Select defaultValue="popularity">
+                  <Select
+                    value={selectedSort}
+                    onValueChange={(value) => {
+                      setSelectedSort(value);
+                      handleSortChange(value);
+                    }}
+                  >
                     <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="popularity">Most Popular</SelectItem>
+                      <SelectItem value="none">No Sorting</SelectItem>
+                      <SelectItem value="rating-low">
+                        Rating: Low to High
+                      </SelectItem>
+                      <SelectItem value="rating-high">
+                        Rating: High to Low
+                      </SelectItem>
                       <SelectItem value="newest">Newest</SelectItem>
                       <SelectItem value="price-low">
                         Price: Low to High
@@ -447,7 +535,6 @@ export default function CoursesPage({
                       <SelectItem value="price-high">
                         Price: High to Low
                       </SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -580,24 +667,34 @@ export default function CoursesPage({
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            {course.category.categoryname}
+                            {course.categoryname}
                             {/* or replace with a `category` if you have one */}
                           </Badge>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Star className="h-4 w-4 fill-primary text-primary" />
-                            <span>4.8</span>{" "}
+                            <span>{course.average_rating}</span>{" "}
                             {/* Replace with a real rating if available */}
                           </div>
                         </div>
                         <h3 className="mt-2 font-semibold">{course.title}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {course.overview}
-                        </p>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          <div
+                            className="
+                          rendered-html line-clamp-4
+                        "
+                            dangerouslySetInnerHTML={{
+                              __html: course.overview,
+                            }}
+                          />
+                        </div>
                         <div className="mt-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/20" />
+                            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-semibold uppercase">
+                              {getInitials(course.fullname)}
+                            </div>{" "}
+                            x
                             <span className="text-xs">
-                              {course.instructor.fullname}
+                              {course.fullname}
                             </span>
                           </div>
                           <span className="font-semibold">
@@ -612,23 +709,36 @@ export default function CoursesPage({
 
               <div className="mt-8 flex justify-center">
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" disabled>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                  >
                     <ChevronDown className="h-4 w-4 rotate-90" />
                     <span className="sr-only">Previous page</span>
                   </Button>
-                  <Button variant="outline" size="sm" className="h-8 w-8">
-                    1
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8">
-                    2
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8">
-                    3
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8">
-                    4
-                  </Button>
-                  <Button variant="outline" size="icon">
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={page === currentPage ? "outline" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8"
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={courses.length < itemsPerPage}
+                  >
                     <ChevronDown className="h-4 w-4 -rotate-90" />
                     <span className="sr-only">Next page</span>
                   </Button>
