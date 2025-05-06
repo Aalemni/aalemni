@@ -131,7 +131,7 @@ export default function HomePage({
                   <Link href="/courses">Explore Courses </Link>
                 </Button>
               </div>
-              <div className="mt-8 flex items-center gap-6">
+              {/* <div className="mt-8 flex items-center gap-6">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div
@@ -151,7 +151,7 @@ export default function HomePage({
                 <div className="text-sm">
                   <span className="font-bold">4.9/5</span> Explore Courses{" "}
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="relative flex items-center justify-center lg:justify-end">
               <div className="relative w-full max-w-lg rounded-lg border bg-background shadow-xl">

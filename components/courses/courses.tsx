@@ -223,12 +223,7 @@ export default function CoursesPage({
   };
 
   const totalPages = Math.ceil(courses_count / itemsPerPage);
-  console.log("courses_count");
-  console.log(courses_count);
-  console.log("itemsPerPage");
-  console.log(itemsPerPage);
-  console.log("totalPages");
-  console.log(totalPages);
+
   function getInitials(fullname: string): string {
     const words = fullname.trim().split(/\s+/);
     if (words.length >= 2) {

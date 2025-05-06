@@ -13,7 +13,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useTranslation } from "@/contexts/translation-context";
 import { User } from "@supabase/supabase-js"; // Import User type
@@ -94,20 +99,16 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
     logged_in_user &&
     ["admin", "instructor", "student"].includes(logged_in_user.role)
   ) {
-    console.log("hii");
     const dashboardPath = `/${logged_in_user.role}/dashboard`;
-    console.log(dashboardPath);
     navItemsWithDashboard.push({
       title: "Dashboard",
       href: dashboardPath,
     });
   }
-  console.log(navItemsWithDashboard);
 
   const handleSignOut = async () => {
     try {
       const result = await signOutAction();
-      console.log(result);
     } catch (error) {}
   };
 
@@ -125,6 +126,7 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
             side={dir === "rtl" ? "right" : "left"}
             className="pr-0"
           >
+            <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
             <Link
               href="/"
               className="flex items-center gap-2"
@@ -178,7 +180,6 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
                 {user ? (
                   <button
                     onClick={() => {
-                      console.log("logout");
                       setIsMenuOpen(false);
                       handleSignOut();
                     }}
@@ -265,7 +266,6 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
           {user ? (
             <Button
               onClick={() => {
-                console.log("logout");
                 handleSignOut();
               }}
               variant="ghost"

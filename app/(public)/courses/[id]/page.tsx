@@ -234,6 +234,5 @@ export default async function Page({ params }: PageProps) {
   const { id } = await params;
   const course = await getCourse(id);
   const coursee = await getCourseById(id);
-  console.log(coursee.data);
   return <CourseDetailPage course={coursee.data} />;
 }

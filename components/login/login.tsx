@@ -39,7 +39,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("ss");
       const from_data = new FormData();
       from_data.append("email", formData.email);
       from_data.append("password", formData.password);

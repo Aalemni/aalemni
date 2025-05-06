@@ -22,7 +22,6 @@ export default function ResetPassword({
     form_data.append("password", formData.password);
     form_data.append("confirmPassword", formData.confirmPassword);
     const result = await resetPasswordAction(form_data);
-    console.log(result);
   };
   return (
     <form

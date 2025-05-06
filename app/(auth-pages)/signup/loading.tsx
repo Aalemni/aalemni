@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function BecomeInstructorLoading() {
+export default function LoginLoading() {
   return (
     <div className="space-y-16">
       {/* Hero Section Skeleton */}

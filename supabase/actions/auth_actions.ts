@@ -95,7 +95,6 @@ export const signUpAction = async (formData: FormData) => {
     };
   }
 
-  console.log("User inserted successfully:", data);
   return {
     message:
       "Thanks for signing up! Please check your email for a verification link.",
@@ -481,11 +480,109 @@ export const signUpActionInstructor = async (formData: FormData) => {
   };
 };
 
+export const signUpAsPartner = async (formData: FormData) => {
+  const name = formData.get("name")?.toString();
+  const email = formData.get("email")?.toString();
+  const username = formData.get("username")?.toString();
+  const password = formData.get("password")?.toString();
+  const confirm_password = formData.get("confirm_password")?.toString();
+  const agree_terms = formData.get("agree_terms")?.toString();
+  const phone = formData.get("phone")?.toString();
+  const role = formData.get("role")?.toString() || "partner";
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") || "https://yourapp.com";
+
+  if (!name)
+    return {
+      message: "Name is required!",
+      success: false,
+    };
+  if (!username)
+    return {
+      message: "Username is required!",
+      success: false,
+    };
+  if (!phone)
+    return {
+      message: "Phone number is required!",
+      success: false,
+    };
+  if (!email || !password || !confirm_password) {
+    return {
+      message: "Email and password are required!",
+      success: false,
+    };
+  }
+  if (password !== confirm_password)
+    return {
+      message: "Password and Confirm Password should be the same!",
+      success: false,
+    };
+  if (!agree_terms || agree_terms === "0") {
+    return {
+      message: "You must agree to the terms to sign up!",
+      success: false,
+    };
+  }
+
+  // const { data: authData, error: authError } = await supabase.auth.signUp({
+  //   email,
+  //   password,
+  //   phone,
+  //   options: {
+  //     emailRedirectTo: `${origin}/auth/callback`,
+  //   },
+  // });
+
+  // if (authError) {
+  //   console.error("Error signing up:", authError.code, authError.message);
+  //   return {
+  //     message: "An Error Occured: " + authError.message,
+  //     success: false,
+  //   };
+  // }
+
+  // const userID = authData.user?.id;
+  // if (!userID) {
+  //   console.error("Error: User ID not found after sign-up.");
+  //   return {
+  //     message: "User creation failed. Please try again.",
+  //     success: false,
+  //   };
+  // }
+
+  // const { data, error } = await supabase.from("users").insert([
+  //   {
+  //     userid: userID,
+  //     fullname: name,
+  //     email,
+  //     phonenumber: phone,
+  //     username,
+  //     role,
+  //     status: "active",
+  //   },
+  // ]);
+  // if (error) {
+  //   return {
+  //     message: "An Error Occured:" + error.message,
+  //     success: false,
+  //   };
+  // }
+
+  return {
+    message:
+      "Thanks for signing up! Please check your email for a verification link.",
+    success: true,
+  };
+};
+
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
+  console.log(email);
+  console.log(password);
   const { data: authData, error: authError } =
     await supabase.auth.signInWithPassword({
       email,

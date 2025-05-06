@@ -261,8 +261,6 @@ export const getAllCourses_OLD = async (
         return 0;
     }
   });
-  console.log("sortedCourses");
-  console.log(sortedCourses);
 
   return {
     success: true,
@@ -673,7 +671,6 @@ export const getCourseById = async (
     .eq("courseid", courseId)
     .single();
 
-  console.log(courseError);
   if (courseError || !courseData) {
     return {
       success: false,

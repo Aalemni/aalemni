@@ -97,7 +97,7 @@ export default function PartnersPage({
                   className="bg-aalemni-orange hover:bg-aalemni-orange/90 text-white"
                   asChild
                 >
-                  <Link href="#become-partner">Become a Partner</Link>
+                  <Link href="/apply-as-partner">Become a Partner</Link>
                 </Button>
                 <Button
                   size="lg"
@@ -206,7 +206,7 @@ export default function PartnersPage({
                       className="w-full border-aalemni-navy text-aalemni-navy hover:bg-aalemni-navy/10"
                       asChild
                     >
-                      <Link href="#become-partner">Learn More</Link>
+                      <Link href="/apply-as-partner">Learn More</Link>
                     </Button>
                   </CardFooter>
                 </Card>
@@ -355,7 +355,7 @@ export default function PartnersPage({
             ))}
           </div>
 
-          <div className="mt-16 flex justify-center">
+          {/* <div className="mt-16 flex justify-center">
             <Card className="w-full max-w-2xl bg-white">
               <CardHeader>
                 <CardTitle className="text-aalemni-navy">
@@ -464,7 +464,7 @@ export default function PartnersPage({
                 </form>
               </CardContent>
             </Card>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -542,7 +542,7 @@ export default function PartnersPage({
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center sm:gap-6">
               <Button size="lg" asChild>
-                <Link href="#become-partner">Submit Inquiry</Link>
+                <Link href="/apply-as-partner">Become a Partner</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="mailto:aalemni.co@gmail.com">Email Us</Link>

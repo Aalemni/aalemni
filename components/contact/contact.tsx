@@ -87,7 +87,6 @@ export default function ContactPage() {
     form_data.append("subject", formData.subject);
     form_data.append("name", formData.name);
     form_data.append("message", formData.message);
-    console.log("Form Data:", formData);
     const response = await fetch("/api/mailer", {
       method: "post",
       headers: {
@@ -97,7 +96,6 @@ export default function ContactPage() {
     });
     const responseData = await response.json();
 
-    console.log("Form response:", response);
     if (!response.ok) {
       console.log("falling over");
       console.log(`response status: ${response.status}`);

@@ -21,7 +21,6 @@ export default function ForgotPassword({
     const form_data = new FormData();
     form_data.append("email", formData.email);
     const result = await forgotPasswordAction(form_data);
-    console.log(result);
   };
   return (
     <>

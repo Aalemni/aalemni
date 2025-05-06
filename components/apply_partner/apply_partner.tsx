@@ -22,7 +22,7 @@ import {
   signUpActionInstructor,
 } from "@/supabase/actions/auth_actions";
 import { toast } from "react-toastify";
-import { Specialty } from "@/types/types";
+import { PartnershipType, Specialty } from "@/types/types";
 import {
   Popover,
   PopoverContent,
@@ -32,16 +32,16 @@ import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
 interface Apply_instructor_props {
-  specialties: Specialty[];
+  partnership_types: PartnershipType[];
 }
 
-export default function ApplyAsInstructorPage({
-  specialties,
+export default function ApplyAsPartnerPage({
+  partnership_types,
 }: Apply_instructor_props) {
+  console.log(partnership_types);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,8 +52,9 @@ export default function ApplyAsInstructorPage({
     role: "instructor",
     phone: "",
     instructor_role: "",
-    linkedin: "",
-    exp_years: "",
+    partnership_type: "",
+    organization_name: "",
+    partnership_goal: "",
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,16 +71,15 @@ export default function ApplyAsInstructorPage({
       data.append("role", formData.role);
       data.append("agree_terms", formData.agree_terms ? "1" : "0");
       data.append("instructor_role", formData.instructor_role);
-      data.append("linkedin", formData.linkedin);
-      data.append("exp_years", formData.exp_years);
-      data.append("specialities", selectedSpecialties.join(","));
+      data.append("partnership_type", formData.partnership_type);
+      data.append("organization_name", formData.organization_name);
+      data.append("partnership_goal", formData.partnership_goal);
       data.append(
         "social_links",
-        JSON.stringify({ linkedin: formData.linkedin })
+        JSON.stringify({ partnership_type: formData.partnership_type })
       );
 
       console.log(formData);
-      console.log(selectedSpecialties);
       const result = await signUpActionInstructor(data);
       if (result) {
         if (!result.success) {
@@ -114,7 +114,7 @@ export default function ApplyAsInstructorPage({
       <Card className="w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Sign Up As Instructor
+            Wanna Become a Partner?
           </CardTitle>
           <CardDescription className="text-center">
             Enter your information to get started
@@ -146,6 +146,7 @@ export default function ApplyAsInstructorPage({
                   type="text"
                   name="username"
                   placeholder="its_hadi"
+                  autoComplete="username"
                   value={formData.username}
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
@@ -184,116 +185,73 @@ export default function ApplyAsInstructorPage({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="instructor_role">Role*</Label>
+                <Label htmlFor="organization_name">Organization Name*</Label>
                 <Input
-                  id="instructor_role"
+                  id="organization_name"
                   required
-                  name="instructor_role"
                   type="text"
-                  placeholder="Web Developer"
-                  value={formData.instructor_role}
+                  placeholder="E.g. Aalemni"
+                  value={formData.organization_name}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      instructor_role: e.target.value,
+                      organization_name: e.target.value,
                     })
                   }
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Specialities</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {selectedSpecialties.length > 0 ? (
-                          specialties
-                            .filter((s) =>
-                              selectedSpecialties.includes(s.specialityid!)
-                            )
-                            .map((s) => (
-                              <span
-                                key={s.specialityid}
-                                className="bg-primary/10 text-primary border border-primary px-2 py-1 rounded-full text-sm"
-                              >
-                                {s.specialityname}
-                              </span>
-                            ))
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Select your subject areas
-                          </span>
-                        )}
-                      </div>
-                      <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandGroup>
-                        {specialties.map((specialty) => (
-                          <CommandItem
-                            key={specialty.specialityid}
-                            onSelect={() => {
-                              const id = specialty.specialityid;
-                              if (!id) return;
-                              setSelectedSpecialties((prev) =>
-                                prev.includes(id)
-                                  ? prev.filter((s) => s !== id)
-                                  : [...prev, id]
-                              );
-                            }}
-                            className={cn(
-                              "flex items-center my-1 gap-2 px-2 py-1.5 cursor-pointer rounded-md transition-colors",
-                              selectedSpecialties.includes(
-                                specialty.specialityid!
-                              )
-                                ? "bg-primary/10 text-primary"
-                                : "hover:bg-muted"
-                            )}
+                <Label htmlFor="partnership_type">Partnership Type</Label>
+                <select
+                  defaultValue="none"
+                  id="partnershipType"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aalemni-orange focus-visible:ring-offset-2"
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      partnership_type: e.target.value,
+                    });
+                  }}
+                >
+                  <option value="none" disabled>
+                    Select partnership type
+                  </option>
+                  {partnership_types.length > 0
+                    ? partnership_types.map((type) => {
+                        return (
+                          <option
+                            value={type.partnershiptypeid}
+                            key={type.partnershiptypeid}
                           >
-                            {specialty.specialityname}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                            {type.name}
+                          </option>
+                        );
+                      })
+                    : "No partnership types available"}
+                </select>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="exp_years">Years of Experience*</Label>
-                <Input
-                  id="exp_years"
-                  required
-                  type="number"
-                  placeholder="5"
-                  min="1"
-                  max="40"
-                  value={formData.exp_years}
-                  onChange={(e) =>
-                    setFormData({ ...formData, exp_years: e.target.value })
-                  }
-                />
-              </div>
+            {/* These fields will span full width */}
+            <div className="space-y-2">
+              <Label htmlFor="partnership_goal">Partnership Goals</Label>
+              <textarea
+                id="partnership_goal"
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aalemni-orange focus-visible:ring-offset-2"
+                placeholder="Tell us about your partnership goals and how you envision collaborating with Aalemni..."
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    partnership_goal: e.target.value,
+                  });
+                }}
+              ></textarea>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn URL</Label>
-                <Input
-                  id="linkedin"
-                  type="url"
-                  placeholder="https://..."
-                  value={formData.linkedin}
-                  onChange={(e) =>
-                    setFormData({ ...formData, linkedin: e.target.value })
-                  }
-                />
-              </div>
-
+            {/* Passwords section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -362,6 +320,7 @@ export default function ApplyAsInstructorPage({
               </div>
             </div>
 
+            {/* Terms and submit */}
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="terms"
@@ -388,14 +347,14 @@ export default function ApplyAsInstructorPage({
 
             <div className="mt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? "Loading..." : "Become a Partner"}
               </Button>
             </div>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Already have an account as a Partner?{" "}
             <Link
               href="/login"
               className="font-medium text-primary hover:underline"

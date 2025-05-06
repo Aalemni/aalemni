@@ -14,11 +14,6 @@ export default async function Page() {
   const { data: partners_testimonials, message } =
     await getAllPartnerTestimonials();
   const { data: partnership_features } = await getAllPartnershipFeatures();
-  console.log(partners);
-  console.log(partnership_types);
-  console.log(partners_testimonials);
-  console.log(message);
-  console.log(partnership_features);
   return (
     <PartnersPage
       partners={partners}

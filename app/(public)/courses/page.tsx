@@ -63,7 +63,6 @@ export default async function Page({ searchParams }: PageProps) {
     itemsPerPage,
     sortBy
   );
-  console.log(courses.data);
   const categories_res: GetAllCategoriesResponse = await getAllCategories();
   const course_levels: GetAllLevelsResponse = await getAllCourseLevels();
 
