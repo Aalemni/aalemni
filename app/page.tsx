@@ -7,7 +7,6 @@ import { getFeaturedCoursesWithDetails } from "@/supabase/actions/course_actions
 import { getAllTestimonials } from "@/supabase/actions/public_testimonials_actions";
 import { getFeaturesByCompany } from "@/supabase/actions/company_features_actions";
 import { getLoggedInUser } from "@/supabase/actions/user_actions";
-import { redirect } from "next/navigation";
 
 export default async function Page() {
   const supabase = await createClient();
@@ -15,12 +14,12 @@ export default async function Page() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  let logged_in_user = null;
 
-  const logged_in_user_res = await getLoggedInUser(user.id);
-  const logged_in_user = logged_in_user_res.data;
+  if (user) {
+    const logged_in_user_res = await getLoggedInUser(user.id);
+    logged_in_user = logged_in_user_res.data?.[0] || null;
+  }
 
   const categories_res = await getAllCategories();
   const categories = categories_res.data;
@@ -35,15 +34,13 @@ export default async function Page() {
   const features = features_res.data;
 
   return (
-    <>
-      <HomePage
-        user={user}
-        logged_in_user={logged_in_user[0]}
-        categories={categories}
-        featured_courses={featured_courses}
-        testimonials={testimonials}
-        company_features={features}
-      />
-    </>
+    <HomePage
+      user={user}
+      logged_in_user={logged_in_user}
+      categories={categories}
+      featured_courses={featured_courses}
+      testimonials={testimonials}
+      company_features={features}
+    />
   );
 }

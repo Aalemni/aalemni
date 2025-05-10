@@ -1,3 +1,5 @@
+"use server";
+
 import { Message } from "@/types/types";
 import ForgotPassword from "@/components/forgot_password/forgot_password";
 

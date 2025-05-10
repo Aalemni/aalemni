@@ -48,50 +48,6 @@ export default function HomePage({
   testimonials,
   company_features,
 }: HomeProps) {
-  const rr = [
-    {
-      icon: Code,
-      title: "Web Development",
-      color: "bg-aalemni-blue/10",
-      textColor: "text-aalemni-blue",
-      href: "/courses?category=web-development",
-    },
-    {
-      icon: LineChart,
-      title: "Business",
-      color: "bg-aalemni-orange/10",
-      textColor: "text-aalemni-orange",
-      href: "/courses?category=business",
-    },
-    {
-      icon: BarChart,
-      title: "Data Science",
-      color: "bg-aalemni-navy/10",
-      textColor: "text-aalemni-navy",
-      href: "/courses?category=data-science",
-    },
-    {
-      icon: Palette,
-      title: "Design",
-      color: "bg-aalemni-blue/10",
-      textColor: "text-aalemni-blue",
-      href: "/courses?category=design",
-    },
-    {
-      icon: Megaphone,
-      title: "Marketing",
-      color: "bg-aalemni-orange/10",
-      textColor: "text-aalemni-orange",
-      href: "/courses?category=marketing",
-    },
-    {
-      icon: Brain,
-      title: "Personal Development",
-      color: "bg-aalemni-navy/10",
-      textColor: "text-aalemni-navy",
-      href: "/courses?category=personal-development",
-    },
-  ];
   return (
     <>
       {/* Hero Section */}
