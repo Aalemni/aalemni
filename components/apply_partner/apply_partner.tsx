@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, GraduationCap, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,12 @@ import {
 import {
   signUpAction,
   signUpActionInstructor,
+  // getLoggedInUser,
 } from "@/supabase/actions/auth_actions";
+import { addPartnerRequest } from "@/supabase/actions/partners_action";
 import { toast } from "react-toastify";
 import { PartnershipType, Specialty } from "@/types/types";
+// import { getLoggedInUser } from "@/supabase/actions/user_actions";
 import {
   Popover,
   PopoverContent,
@@ -33,13 +36,17 @@ import { cn } from "@/lib/utils";
 
 interface Apply_instructor_props {
   partnership_types: PartnershipType[];
+  logged_in_user: any;
 }
 
 export default function ApplyAsPartnerPage({
   partnership_types,
+  logged_in_user,
 }: Apply_instructor_props) {
   console.log(partnership_types);
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,58 +63,51 @@ export default function ApplyAsPartnerPage({
     organization_name: "",
     partnership_goal: "",
   });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const data = new FormData();
-      data.append("name", formData.name);
-      data.append("email", formData.email);
-      data.append("username", formData.username);
-      data.append("password", formData.password);
-      data.append("confirm_password", formData.confirm_password);
-      data.append("phone", formData.phone);
-      data.append("role", formData.role);
-      data.append("agree_terms", formData.agree_terms ? "1" : "0");
-      data.append("instructor_role", formData.instructor_role);
-      data.append("partnership_type", formData.partnership_type);
-      data.append("organization_name", formData.organization_name);
-      data.append("partnership_goal", formData.partnership_goal);
-      data.append(
-        "social_links",
-        JSON.stringify({ partnership_type: formData.partnership_type })
-      );
+      const partnerData = {
+        partnership_type: Number(formData.partnership_type),
+        username: formData.username,
+        full_name: logged_in_user ? logged_in_user.full_name : formData.name,
+        email: logged_in_user ? logged_in_user.email : formData.email,
+        phone_number: logged_in_user
+          ? logged_in_user.phone_number
+          : formData.phone,
+        status: 1,
+        organization_name: formData.organization_name,
+        partnership_goal: formData.partnership_goal,
+        userid: logged_in_user ? logged_in_user.id : null,
+      };
 
-      console.log(formData);
-      const result = await signUpActionInstructor(data);
-      if (result) {
-        if (!result.success) {
-          if (result.message.includes("duplicate key value")) {
-            if (result.message.includes("email")) {
-              toast.error("User email already exists");
-            } else if (result.message.includes("username")) {
-              toast.error("Username already exists");
-            } else {
-              toast.error("User already exists");
-            }
-          } else {
-            toast.error(result.message);
-          }
-        } else {
-          toast.success(result.message);
-          router.push("/verify-account");
-        }
+      const result = await addPartnerRequest(partnerData);
+
+      if (result.success) {
+        toast.success("Partner request submitted successfully");
+        router.push("/verify-account");
       } else {
-        toast.error("An Error Occurred! Please Try Again Later");
+        toast.error(result.message || "Failed to submit partner request");
       }
     } catch (error) {
-      console.error("Signup failed:", error);
-      toast.error("An Error Occurred! Please Try Again Later");
+      console.error("Submit failed:", error);
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (logged_in_user) {
+      setIsLoggedIn(true);
+      setUserData(logged_in_user);
+      console.log("logged_in_user id:", logged_in_user.userid);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [logged_in_user]);
 
   return (
     <div className="container flex min-h-screen flex-col items-center justify-center bg-muted/40 py-8">
@@ -123,67 +123,73 @@ export default function ApplyAsPartnerPage({
         <CardContent>
           <form className="space-y-6 text-start" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name*</Label>
-                <Input
-                  required
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Hadi Rahhal"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name*</Label>
+                  <Input
+                    required
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Hadi Rahhal"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                  />
+                </div>
+              )}
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username*</Label>
+                  <Input
+                    required
+                    id="username"
+                    type="text"
+                    name="username"
+                    placeholder="its_hadi"
+                    autoComplete="username"
+                    value={formData.username}
+                    onChange={(e) =>
+                      setFormData({ ...formData, username: e.target.value })
+                    }
+                  />
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="username">Username*</Label>
-                <Input
-                  required
-                  id="username"
-                  type="text"
-                  name="username"
-                  placeholder="its_hadi"
-                  autoComplete="username"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                />
-              </div>
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email*</Label>
+                  <Input
+                    id="email"
+                    required
+                    type="text"
+                    name="email"
+                    placeholder="hadi@example.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email*</Label>
-                <Input
-                  id="email"
-                  required
-                  type="text"
-                  name="email"
-                  placeholder="hadi@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number*</Label>
-                <Input
-                  id="phone"
-                  type="text"
-                  name="phone"
-                  required
-                  placeholder="+961 ** *** ***"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
-              </div>
-
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number*</Label>
+                  <Input
+                    id="phone"
+                    type="text"
+                    name="phone"
+                    required
+                    placeholder="+961 ** *** ***"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="organization_name">Organization Name*</Label>
                 <Input
@@ -200,7 +206,6 @@ export default function ApplyAsPartnerPage({
                   }
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="partnership_type">Partnership Type</Label>
                 <select
@@ -251,73 +256,78 @@ export default function ApplyAsPartnerPage({
             </div>
 
             {/* Passwords section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    required
-                    className="pr-10"
-                    autoComplete="new-password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </button>
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirm_password">Confirm Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm_password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    required
-                    className="pr-10"
-                    autoComplete="new-confirm_password"
-                    value={formData.confirm_password}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        confirm_password: e.target.value,
-                      })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      required
+                      className="pr-10"
+                      autoComplete="new-password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">
+                        {showPassword ? "Hide password" : "Show password"}
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {!isLoggedIn && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirm_password">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm_password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      required
+                      className="pr-10"
+                      autoComplete="new-confirm_password"
+                      value={formData.confirm_password}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          confirm_password: e.target.value,
+                        })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">
+                        {showPassword ? "Hide password" : "Show password"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Terms and submit */}

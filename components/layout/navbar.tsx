@@ -25,7 +25,8 @@ import { User } from "@supabase/supabase-js"; // Import User type
 import { signOutAction } from "@/supabase/actions/auth_actions";
 import { Logged_In_User } from "@/types/types";
 import Image from "next/image";
-
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 interface NavbarProps {
   user: User | null; // user can be null if not logged in
   logged_in_user: Logged_In_User | null;
@@ -35,6 +36,13 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { t, dir } = useTranslation();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user && pathname.startsWith("/partners")) {
+      router.replace("/signup");
+    }
+  }, [user, pathname, router]);
 
   const navItems = [
     {

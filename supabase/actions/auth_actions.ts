@@ -704,3 +704,16 @@ export const signOutAction = async () => {
     success: true,
   };
 };
+
+// export const getLoggedInUser = async () => {
+//   const supabase = await createClient();
+
+//   const user = supabase.auth.getUser();
+
+//   console.log("user:", user);
+//   if (user) {
+//     return user;
+//   } else {
+//     return null;
+//   }
+// };

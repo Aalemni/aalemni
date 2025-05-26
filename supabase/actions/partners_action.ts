@@ -1,5 +1,7 @@
 "use server";
 
+import { PartnerDataRequest } from "@/types";
+import nodemailer from "nodemailer";
 import { createClient } from "@/supabase/utils/server";
 import {
   Partner,
@@ -371,8 +373,8 @@ export const updatePartnerTestimonial = async (
     .from("partners_testimonials")
     .update(updates)
     .eq("testimonialid", id)
-    .select()
-    .single();
+    .select();
+  // .single();
 
   return {
     success: !error,
@@ -395,3 +397,69 @@ export const deletePartnerTestimonial = async (id: number) => {
     message: error?.message ?? "Testimonial deleted",
   };
 };
+
+export const addPartnerRequest = async (partnerData: PartnerDataRequest) => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("partners")
+    .insert(partnerData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error inserting partner:", error);
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, data };
+};
+
+export async function updateStatusAndSendEmail(
+  partnerid: string,
+  status: number,
+  email: string,
+  organizationName: string
+) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("partners")
+    .update({ status })
+    .eq("partnerid", partnerid)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  if (!data || data.length === 0) {
+    throw new Error("Partner not found.");
+  }
+
+  if (status === 2 || status === 3) {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const statusText = status === 2 ? "Rejected" : "Accepted";
+
+    const mailOptions = {
+      from: process.env.AALEMNI_EMAIL,
+      to: email,
+      subject: `Your partnership status: ${statusText}`,
+      html: `
+        <p>Dear ${organizationName},</p>
+        <p>Your partnership status has been updated to <strong>${statusText}</strong>.</p>
+        <p>Thank you for your interest.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
+
+  return { success: true, data: data[0] };
+}

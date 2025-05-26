@@ -21,6 +21,7 @@ import {
   Flag,
   LogOut,
   User,
+  UserRound,
 } from "lucide-react";
 import {
   Sidebar,
@@ -93,6 +94,11 @@ export function AalemniSidebar({
             title: "Settings",
             icon: Settings,
             href: "/student/settings",
+          },
+          {
+            title: "Partners",
+            icon: UserRound,
+            href: "/student/partner",
           },
         ];
       case "instructor":
@@ -314,7 +320,10 @@ export function AalemniSidebar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link href="/instructor/settings" className="flex items-center">
+                  <Link
+                    href="/instructor/settings"
+                    className="flex items-center"
+                  >
                     <User className="mr-2 h-4 w-4" />
                     <span>My Profile & settings</span>
                   </Link>

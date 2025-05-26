@@ -512,7 +512,7 @@ export type PartnershipType = {
 export interface PartnershipFeature {
   partnershipfeatureid: number;
   name: string;
-  icon: string ;
+  icon: string;
   description: string;
   companyid: number | 1;
 }
@@ -531,3 +531,19 @@ export interface PartnerTestimonialWithPartner {
   rate: number;
   partners: Partner;
 }
+
+export type PartnertDataRequest = {
+  logo?: string | null;
+  description?: string | null;
+  websitelink?: string | null;
+  partnersince?: string | null;
+  partnership_type: number;
+  userid?: string | null;
+  username?: string | null;
+  full_name?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  status_id: number;
+  organization_name?: string | null;
+  partnership_goal?: string | null;
+};
