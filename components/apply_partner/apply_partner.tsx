@@ -2,9 +2,9 @@
 
 import type React from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, GraduationCap, Check, ChevronDown } from "lucide-react";
+import { Eye, EyeOff} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,26 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  signUpAction,
-  signUpActionInstructor,
-  // getLoggedInUser,
-} from "@/supabase/actions/auth_actions";
 import { addPartnerRequest } from "@/supabase/actions/partners_action";
 import { toast } from "react-toastify";
-import { PartnershipType, Specialty } from "@/types/types";
-// import { getLoggedInUser } from "@/supabase/actions/user_actions";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-
+import { Logged_In_User, PartnershipType, Specialty } from "@/types/types";
 interface Apply_instructor_props {
   partnership_types: PartnershipType[];
-  logged_in_user: any;
+  logged_in_user: Logged_In_User;
 }
 
 export default function ApplyAsPartnerPage({
@@ -44,8 +30,9 @@ export default function ApplyAsPartnerPage({
   logged_in_user,
 }: Apply_instructor_props) {
   console.log(partnership_types);
+  console.log(logged_in_user);
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,30 +51,30 @@ export default function ApplyAsPartnerPage({
     partnership_goal: "",
   });
 
+  // console.log(isLoggedIn);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    console.log(logged_in_user);
+    console.log(logged_in_user.userid);
     try {
       const partnerData = {
         partnership_type: Number(formData.partnership_type),
         username: formData.username,
-        full_name: logged_in_user ? logged_in_user.full_name : formData.name,
+        full_name: logged_in_user ? logged_in_user.fullname : formData.name,
         email: logged_in_user ? logged_in_user.email : formData.email,
-        phone_number: logged_in_user
-          ? logged_in_user.phone_number
-          : formData.phone,
+        phone_number: logged_in_user ? logged_in_user.phonenumber : formData.phone,
         status: 1,
         organization_name: formData.organization_name,
         partnership_goal: formData.partnership_goal,
-        userid: logged_in_user ? logged_in_user.id : null,
+        userid: logged_in_user.userid,
       };
 
       const result = await addPartnerRequest(partnerData);
 
       if (result.success) {
         toast.success("Partner request submitted successfully");
-        router.push("/verify-account");
+        // router.push("/verify-account");
       } else {
         toast.error(result.message || "Failed to submit partner request");
       }
@@ -98,16 +85,6 @@ export default function ApplyAsPartnerPage({
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (logged_in_user) {
-      setIsLoggedIn(true);
-      setUserData(logged_in_user);
-      console.log("logged_in_user id:", logged_in_user.userid);
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, [logged_in_user]);
 
   return (
     <div className="container flex min-h-screen flex-col items-center justify-center bg-muted/40 py-8">
@@ -123,7 +100,7 @@ export default function ApplyAsPartnerPage({
         <CardContent>
           <form className="space-y-6 text-start" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name*</Label>
                   <Input
@@ -139,7 +116,7 @@ export default function ApplyAsPartnerPage({
                   />
                 </div>
               )}
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="username">Username*</Label>
                   <Input
@@ -157,7 +134,7 @@ export default function ApplyAsPartnerPage({
                 </div>
               )}
 
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="email">Email*</Label>
                   <Input
@@ -174,7 +151,7 @@ export default function ApplyAsPartnerPage({
                 </div>
               )}
 
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number*</Label>
                   <Input
@@ -258,7 +235,7 @@ export default function ApplyAsPartnerPage({
             {/* Passwords section */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -292,7 +269,7 @@ export default function ApplyAsPartnerPage({
                 </div>
               )}
 
-              {!isLoggedIn && (
+              {!logged_in_user && (
                 <div className="space-y-2">
                   <Label htmlFor="confirm_password">Confirm Password</Label>
                   <div className="relative">

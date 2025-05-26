@@ -39,7 +39,7 @@ export function Navbar({ user, logged_in_user }: NavbarProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!user && pathname.startsWith("/partners")) {
+    if (!user && pathname.startsWith("/apply-as-partner")) {
       router.replace("/signup");
     }
   }, [user, pathname, router]);

@@ -1,6 +1,6 @@
 "use server";
 
-import { PartnerDataRequest } from "@/types";
+import { PartnerDataRequest } from "@/types/types";
 import nodemailer from "nodemailer";
 import { createClient } from "@/supabase/utils/server";
 import {

@@ -532,7 +532,7 @@ export interface PartnerTestimonialWithPartner {
   partners: Partner;
 }
 
-export type PartnertDataRequest = {
+export type PartnerDataRequest = {
   logo?: string | null;
   description?: string | null;
   websitelink?: string | null;
@@ -543,7 +543,7 @@ export type PartnertDataRequest = {
   full_name?: string | null;
   email?: string | null;
   phone_number?: string | null;
-  status_id: number;
+  status: number;
   organization_name?: string | null;
   partnership_goal?: string | null;
 };
