@@ -388,6 +388,7 @@ export type Course_by_id = {
   category: Category_In_Course;
   level: Level;
   module: Module[];
+  status: string; // e.g., "published", "draft"
   totalDurationMinutes: number;
   averageRating: number;
   reviewCount: number;

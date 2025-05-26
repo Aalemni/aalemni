@@ -1,8 +1,9 @@
 "use server";
 import CourseDetail from "@/components/instructor/course_by_id/course_by_id";
 import React from "react";
-import { Course_2 } from "@/types/types";
+import { Course_2, Course_by_id } from "@/types/types";
 import { type Metadata } from "next";
+import { getCourseById } from "@/supabase/actions/course_actions";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -106,7 +107,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const course = await getCourse(id);
+  const course = (await getCourseById(id)).data;
 
   return {
     title: course.title,
@@ -115,7 +116,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  const course = await getCourse(id);
+  const course = (await getCourseById(id)).data;
   return (
     <>
       <CourseDetail course={course} />

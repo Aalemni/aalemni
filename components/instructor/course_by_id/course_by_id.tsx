@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -36,13 +35,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Course_2 } from "@/types/types";
+import moment from "moment";
+import { Course_2, Course_by_id } from "@/types/types";
+import dynamic from "next/dynamic";
+import React, { useRef, useState } from "react";
+import { RichTextEditorHandle } from "@/components/quill_editor/quill_editor";
 
-export default function CourseDetailPage({ course }: { course: Course_2 }) {
+export default function CourseDetailPage({ course }: { course: Course_by_id }) {
   const [activeTab, setActiveTab] = useState("content");
   const [deleteModuleDialogOpen, setDeleteModuleDialogOpen] = useState(false);
   const [deleteLessonDialogOpen, setDeleteLessonDialogOpen] = useState(false);
-  const [moduleToDelete, setModuleToDelete] = useState<number | null>(null);
+  const [moduleToDelete, setModuleToDelete] = useState<string | null>(null);
   const [lessonToDelete, setLessonToDelete] = useState<{
     moduleId: number;
     lessonId: number;
@@ -68,7 +71,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
     setExpandedLesson(newExpandedLesson);
   };
 
-  const handleDeleteModule = (moduleId: number) => {
+  const handleDeleteModule = (moduleId: string) => {
     setModuleToDelete(moduleId);
     setDeleteModuleDialogOpen(true);
   };
@@ -93,6 +96,26 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
     setDeleteLessonDialogOpen(false);
     setLessonToDelete(null);
   };
+  const totalReviews = course.reviews.length;
+
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = course.reviews.filter(
+      (review) => review.rate === rating
+    ).length;
+    const percentage =
+      totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+    return { rating, percentage };
+  });
+
+  const editorRef = useRef<RichTextEditorHandle>(null);
+  const [content, setContent] = useState<string>("");
+
+  const handleGetContent = () => {
+    if (editorRef.current) {
+      const html = editorRef.current.getContent();
+      setContent(html);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -113,7 +136,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
       <div className="flex flex-col lg:flex-row gap-6 mb-8">
         <div className="lg:w-1/3">
           <Image
-            src={course.thumbnail || "/placeholder.svg"}
+            src={"/placeholder.svg"}
             alt={course.title}
             width={300}
             height={200}
@@ -135,7 +158,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                 {course.status === "published" ? "Published" : "Draft"}
               </Badge>
             </div>
-            <div className="mt-4 md:mt-0">
+            <div className="mt-4 ml-2 md:mt-0">
               <Button>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Course Details
@@ -143,16 +166,40 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
             </div>
           </div>
 
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {course.description}
-          </p>
+          {/* <p className="text-gray-600 dark:text-gray-300 mb-6">
+            {course.overview}
+          </p> */}
+          <div>
+            <div
+              className="
+                    rendered-html
+                    [&_h1]:text-3xl [&_h1]:font-bold
+                    [&_h2]:text-2xl [&_h2]:font-semibold
+                    [&_h3]:text-xl [&_h3]:font-semibold
+                    [&_h4]:text-lg [&_h4]:font-medium
+                    [&_h5]:text-base [&_h5]:font-medium
+                    [&_h6]:text-sm [&_h6]:font-medium
+
+                    [&_p]:text-base [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_span]:text-base
+                    [&_strong]:font-bold
+                    [&_em]:italic
+                    [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
+                    [&_li]:mb-1
+                    [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
+                    "
+              dangerouslySetInnerHTML={{ __html: course.overview }}
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div className="flex items-center">
               <Users className="h-5 w-5 text-gray-500 mr-2" />
               <div>
                 <p className="text-sm text-gray-500">Students</p>
-                <p className="font-medium">{course.students}</p>
+                <p className="font-medium">students count</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -160,7 +207,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
               <div>
                 <p className="text-sm text-gray-500">Rating</p>
                 <p className="font-medium">
-                  {course.rating} ({course.reviews.total} reviews)
+                  {course.averageRating} ({course.reviewCount} reviews)
                 </p>
               </div>
             </div>
@@ -169,7 +216,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
               <div>
                 <p className="text-sm text-gray-500">Last Updated</p>
                 <p className="font-medium">
-                  {new Date(course.lastUpdated).toLocaleDateString()}
+                  {new Date(course.updatedat).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -177,7 +224,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
 
           <div className="flex flex-wrap gap-3">
             <Button variant="outline" asChild>
-              <Link href={`/courses/${course.id}`} target="_blank">
+              <Link href={`/courses/${course.courseid}`} target="_blank">
                 <Eye className="mr-2 h-4 w-4" />
                 Preview Course
               </Link>
@@ -202,10 +249,10 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
             <FileText className="mr-2 h-4 w-4" />
             Course Content
           </TabsTrigger>
-          <TabsTrigger value="forum" onClick={() => setActiveTab("forum")}>
+          {/* <TabsTrigger value="forum" onClick={() => setActiveTab("forum")}>
             <MessageSquare className="mr-2 h-4 w-4" />
             Forum & Discussions
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger value="reviews" onClick={() => setActiveTab("reviews")}>
             <Star className="mr-2 h-4 w-4" />
             Reviews & Ratings
@@ -237,18 +284,20 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
             <CardContent>
               {/* Modules Section */}
               <div className="space-y-4">
-                {course.modules.map((module) => (
+                {course.module?.map((module, moduleIndex) => (
                   <div
-                    key={module.id}
+                    key={moduleIndex}
                     className="border rounded-lg overflow-hidden"
                   >
                     {/* Module Header */}
                     <div
                       className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer"
-                      onClick={() => toggleModule(module.id)}
+                      onClick={() => toggleModule(moduleIndex)}
                     >
                       <div className="flex items-center">
-                        <span className="font-medium">Module {module.id}:</span>
+                        <span className="font-medium">
+                          Module {moduleIndex}:
+                        </span>
                         <span className="ml-2">{module.title}</span>
                       </div>
                       <div className="flex items-center">
@@ -270,13 +319,13 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                           className="mr-2"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteModule(module.id);
+                            handleDeleteModule(module.moduleid);
                           }}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>
-                        {expandedModule === module.id ? (
+                        {expandedModule === moduleIndex ? (
                           <ChevronUp className="h-5 w-5 text-gray-500" />
                         ) : (
                           <ChevronDown className="h-5 w-5 text-gray-500" />
@@ -285,13 +334,13 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                     </div>
 
                     {/* Module Content (Lessons) */}
-                    {expandedModule === module.id && (
+                    {expandedModule === moduleIndex && (
                       <div className="p-4 border-t">
                         <div className="mb-4">
                           <p className="text-sm text-gray-500 mb-2">
                             Module Description:
                           </p>
-                          <p>{module.description}</p>
+                          <p>{module.overview}</p>
                         </div>
 
                         <div className="flex justify-between items-center mb-4">
@@ -303,26 +352,26 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                         </div>
 
                         <div className="space-y-3">
-                          {module.lessons.map((lesson) => (
+                          {module.lesson?.map((lesson, lessonIndex) => (
                             <div
-                              key={lesson.id}
+                              key={lessonIndex}
                               className="border rounded-lg overflow-hidden"
                             >
                               {/* Lesson Header */}
                               <div
                                 className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 cursor-pointer"
                                 onClick={() =>
-                                  toggleLesson(module.id, lesson.id)
+                                  toggleLesson(moduleIndex, lessonIndex)
                                 }
                               >
                                 <div>
                                   <span className="font-medium">
-                                    Lesson {lesson.id}:
+                                    Lesson {lessonIndex}:
                                   </span>
                                   <span className="ml-2">{lesson.title}</span>
-                                  <span className="ml-2 text-sm text-gray-500">
+                                  {/* <span className="ml-2 text-sm text-gray-500">
                                     ({lesson.duration})
-                                  </span>
+                                  </span> */}
                                 </div>
                                 <div className="flex items-center">
                                   <Button
@@ -343,14 +392,17 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                                     className="mr-2"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeleteLesson(module.id, lesson.id);
+                                      handleDeleteLesson(
+                                        moduleIndex,
+                                        lessonIndex
+                                      );
                                     }}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Delete</span>
                                   </Button>
-                                  {expandedLesson?.moduleId === module.id &&
-                                  expandedLesson?.lessonId === lesson.id ? (
+                                  {expandedLesson?.moduleId === moduleIndex &&
+                                  expandedLesson?.lessonId === lessonIndex ? (
                                     <ChevronUp className="h-5 w-5 text-gray-500" />
                                   ) : (
                                     <ChevronDown className="h-5 w-5 text-gray-500" />
@@ -359,14 +411,14 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                               </div>
 
                               {/* Lesson Content (Pages) */}
-                              {expandedLesson?.moduleId === module.id &&
-                                expandedLesson?.lessonId === lesson.id && (
+                              {expandedLesson?.moduleId === moduleIndex &&
+                                expandedLesson?.lessonId === lessonIndex && (
                                   <div className="p-3 border-t">
                                     <div className="mb-4">
                                       <p className="text-sm text-gray-500 mb-2">
                                         Lesson Description:
                                       </p>
-                                      <p>{lesson.description}</p>
+                                      <p>{lesson.overview}</p>
                                     </div>
 
                                     <div className="flex justify-between items-center mb-4">
@@ -378,13 +430,13 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                                     </div>
 
                                     <div className="space-y-2">
-                                      {lesson.pages.map((page) => (
+                                      {lesson.page?.map((page, pageIndex) => (
                                         <div
-                                          key={page.id}
+                                          key={pageIndex}
                                           className="flex items-center justify-between p-2 border rounded-lg"
                                         >
                                           <span>
-                                            Page {page.id}: {page.title}
+                                            Page {pageIndex}: {page.title}
                                           </span>
                                           <div className="flex items-center">
                                             <Button
@@ -422,7 +474,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
         </TabsContent>
 
         {/* Forum & Discussions Tab */}
-        <TabsContent value="forum">
+        {/* <TabsContent value="forum">
           <Card>
             <CardHeader>
               <CardTitle>Course Forum & Discussions</CardTitle>
@@ -474,7 +526,6 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
                 </div>
               </div>
 
-              {/* Forum Topics - This would be populated from API */}
               <div className="space-y-4">
                 <div className="p-4 border rounded-lg">
                   <div className="flex justify-between items-start">
@@ -530,7 +581,7 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Reviews & Ratings Tab */}
         <TabsContent value="reviews">
@@ -545,131 +596,100 @@ export default function CourseDetailPage({ course }: { course: Course_2 }) {
               <div className="flex flex-col md:flex-row gap-8 mb-8">
                 <div className="md:w-1/3 flex flex-col items-center justify-center">
                   <div className="text-5xl font-bold">
-                    {course.reviews.average}
+                    {course.averageRating}
                   </div>
                   <div className="flex items-center mt-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${i < Math.floor(course.reviews.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                        className={`h-5 w-5 ${i < Math.floor(course.averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
                       />
                     ))}
                   </div>
                   <div className="text-sm text-gray-500 mt-2">
-                    Based on {course.reviews.total} reviews
+                    Based on {course.reviewCount}{" "}
+                    {totalReviews === 1 ? "review" : "reviews"}
                   </div>
                 </div>
-
                 <div className="md:w-2/3">
                   <h4 className="font-medium mb-4">Rating Distribution</h4>
-                  {course.reviews.distribution.map((item) => (
-                    <div key={item.stars} className="flex items-center mb-2">
-                      <div className="w-16 flex items-center">
-                        <span className="mr-1">{item.stars}</span>
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      </div>
-                      <div className="flex-1 mx-4">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-yellow-400 h-2.5 rounded-full"
-                            style={{
-                              width: `${(item.count / course.reviews.total) * 100}%`,
-                            }}
-                          ></div>
+                  <div className="mt-6 space-y-4">
+                    {ratingDistribution.map(({ rating, percentage }) => (
+                      <div key={rating} className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <span>{rating}</span>
+                          <svg
+                            className="h-4 w-4 text-yellow-400 fill-yellow-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
                         </div>
+                        <div className="h-2 flex-1 rounded-full bg-muted">
+                          <div
+                            className="h-2 rounded-full bg-aalemni-orange"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {percentage}%
+                        </span>
                       </div>
-                      <div className="w-16 text-right text-sm text-gray-500">
-                        {item.count} (
-                        {Math.round((item.count / course.reviews.total) * 100)}
-                        %)
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium">Recent Reviews</h4>
-                  <div className="flex items-center">
-                    <span className="text-sm text-gray-500 mr-2">Sort by:</span>
-                    <select className="text-sm border rounded-md p-1">
-                      <option>Most Recent</option>
-                      <option>Highest Rating</option>
-                      <option>Lowest Rating</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Reviews List - This would be populated from API */}
+              <div className="md:col-span-2">
                 <div className="space-y-6">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
+                  {course.reviews.map((review) => (
+                    <div
+                      key={review.reviewid}
+                      className="rounded-lg border p-6"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 overflow-hidden rounded-full">
+                          <Image
+                            src={"/placeholder.svg"}
+                            alt={review.user.fullname}
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                         <div>
-                          <h5 className="font-medium">Michael Johnson</h5>
-                          <div className="flex items-center mt-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${i < 5 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-                              />
-                            ))}
-                            <span className="text-sm text-gray-500 ml-2">
-                              1 week ago
+                          <h4 className="font-medium">
+                            {review.user.fullname}
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            <div className="flex">
+                              {Array(5)
+                                .fill(null)
+                                .map((_, i) => (
+                                  <svg
+                                    key={i}
+                                    className={`h-4 w-4 ${i < review.rate ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                  </svg>
+                                ))}
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {moment(review.createdat).format("YYYY-MM-DD")}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
+                      <p className="mt-4">{review.description}</p>
                     </div>
-                    <p className="mt-3">
-                      This course exceeded my expectations! The content is
-                      well-structured and the explanations are clear. I
-                      especially enjoyed the practical examples that helped me
-                      understand complex concepts.
-                    </p>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
-                        <div>
-                          <h5 className="font-medium">Sarah Williams</h5>
-                          <div className="flex items-center mt-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${i < 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-                              />
-                            ))}
-                            <span className="text-sm text-gray-500 ml-2">
-                              2 weeks ago
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                    <p className="mt-3">
-                      Great course overall. The content is comprehensive and the
-                      instructor explains things well. I would have liked more
-                      advanced examples, but it's still a solid course for
-                      beginners and intermediate developers.
-                    </p>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="mt-6 text-center">
-                  <Button variant="outline">View All Reviews</Button>
+                <div className="mt-6 flex justify-center">
+                  <Button variant="outline">Load More Reviews</Button>
                 </div>
               </div>
             </CardContent>

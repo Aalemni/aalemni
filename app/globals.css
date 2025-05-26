@@ -197,3 +197,7 @@
 #partners-testimonials .swiper-button-next {
   display: none !important;
 }
+
+.ql-toolbar.ql-snow:first-of-type {
+  display: none;
+}

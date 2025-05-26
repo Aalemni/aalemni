@@ -129,8 +129,7 @@ export const getAllCourses_OLD = async (
   let courseQuery = supabase
     .from("courses")
     .select("*, instructor:instructorid(*), category:categoryid(*)")
-    .or(`title.ilike.%${query}%,overview.ilike.%${query}%`)
-
+    .or(`title.ilike.%${query}%,overview.ilike.%${query}%`);
 
   const { data, count } = await supabase
     .from("courses")
@@ -280,7 +279,8 @@ export const getAllCourses = async (
   ratings: string[] = [],
   currentPage = 1,
   pageSize = 9,
-  sortBy = "none"
+  sortBy = "none",
+  instructor_id: string = ""
 ): Promise<GetAllCoursesResponse> => {
   const supabase = await createClient();
 
@@ -319,7 +319,7 @@ export const getAllCourses = async (
     in_current_page: currentPage,
     in_page_size: pageSize,
     in_sort_by: sortBy,
-    in_user_id: null,
+    in_user_id: instructor_id ? instructor_id : null,
   });
 
   if (error || !data) {
@@ -481,7 +481,7 @@ export const getFeaturedCoursesWithDetails =
       await supabase.from("featured_courses").select("courseid");
 
     if (featuredCoursesError || !featuredCourses) {
-      console.error("Error fetching featured courses:", featuredCoursesError);
+      console.log("Error fetching featured courses:", featuredCoursesError);
       return {
         success: false,
         message:
@@ -503,7 +503,7 @@ export const getFeaturedCoursesWithDetails =
       );
 
     if (coursesError || !courses) {
-      console.error("Error fetching courses:", coursesError);
+      console.log("Error fetching courses:", coursesError);
       return {
         success: false,
         message: coursesError.message || "Error While getting courses",
@@ -610,6 +610,7 @@ const emptyCourse: Course_by_id = {
   previewimage: null,
   price: 0,
   categoryid: "",
+  status: "",
   instructor: {
     role: "",
     email: "",
@@ -652,6 +653,7 @@ const emptyCourse: Course_by_id = {
 export const getCourseById = async (
   courseId: string
 ): Promise<GetCourseByID> => {
+  console.log(courseId);
   const supabase = await createClient();
   const { data: courseData, error: courseError } = await supabase
     .from("courses")
@@ -724,7 +726,12 @@ export const getCourseById = async (
 
   let fullCourseData = {};
   if (courseError || instructorError) {
-    console.error("Error fetching data:", courseError || instructorError);
+    if (courseError) {
+      console.log("Error fetching course data:", courseError);
+    }
+    if (instructorError) {
+      console.log("Error fetching instructor data:", instructorError);
+    }
   }
   return {
     success: true,
