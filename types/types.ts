@@ -538,7 +538,7 @@ export type PartnertDataRequest = {
   websitelink?: string | null;
   partnersince?: string | null;
   partnership_type: number;
-  userid?: string | null;
+  userid: string;
   username?: string | null;
   full_name?: string | null;
   email?: string | null;

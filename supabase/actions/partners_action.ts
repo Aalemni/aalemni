@@ -1,6 +1,6 @@
 "use server";
 
-import { PartnerDataRequest } from "@/types";
+import { PartnertDataRequest } from "@/types/types";
 import nodemailer from "nodemailer";
 import { createClient } from "@/supabase/utils/server";
 import {
@@ -398,7 +398,7 @@ export const deletePartnerTestimonial = async (id: number) => {
   };
 };
 
-export const addPartnerRequest = async (partnerData: PartnerDataRequest) => {
+export const addPartnerRequest = async (partnerData: PartnertDataRequest) => {
   const supabase = await createClient();
 
   const { data, error } = await supabase

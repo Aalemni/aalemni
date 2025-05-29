@@ -17,7 +17,7 @@ export default async function Page() {
     `
     )
     .order("partnersince", { ascending: false });
-  // console.log(partners);
+  console.log(partners);
   if (error) {
     console.error("Error fetching partners:", error);
   }
