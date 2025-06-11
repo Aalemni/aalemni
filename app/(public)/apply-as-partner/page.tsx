@@ -13,12 +13,17 @@ export default async function Page() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let logged_in_user = null;
+  // let logged_in_user = null;
 
-  if (user) {
-    const logged_in_user_res = await getLoggedInUser(user.id);
-    logged_in_user = logged_in_user_res.data?.[0] || null;
-    console.log(user);
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  const logged_in_user_res = await getLoggedInUser(user.id);
+  const logged_in_user = logged_in_user_res.data?.[0];
+
+  if (!logged_in_user) {
+    throw new Error("Logged in user data not found");
   }
 
   return (

@@ -398,7 +398,7 @@ export const deletePartnerTestimonial = async (id: number) => {
   };
 };
 
-export const addPartnerRequest = async (partnerData: PartnertDataRequest) => {
+export const addPartnerRequest = async (partnerData: PartnerDataRequest) => {
   const supabase = await createClient();
 
   const { data, error } = await supabase

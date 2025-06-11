@@ -4,7 +4,7 @@ import type React from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff} from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,8 +29,8 @@ export default function ApplyAsPartnerPage({
   partnership_types,
   logged_in_user,
 }: Apply_instructor_props) {
-  console.log(partnership_types);
-  console.log(logged_in_user);
+  // console.log(partnership_types);
+  // console.log(logged_in_user);
   const router = useRouter();
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
@@ -63,7 +63,9 @@ export default function ApplyAsPartnerPage({
         username: formData.username,
         full_name: logged_in_user ? logged_in_user.fullname : formData.name,
         email: logged_in_user ? logged_in_user.email : formData.email,
-        phone_number: logged_in_user ? logged_in_user.phonenumber : formData.phone,
+        phone_number: logged_in_user
+          ? logged_in_user.phonenumber
+          : formData.phone,
         status: 1,
         organization_name: formData.organization_name,
         partnership_goal: formData.partnership_goal,
