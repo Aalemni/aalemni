@@ -37,26 +37,40 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Course_courses } from "@/types/types";
+import { Category_courses, Course_courses, Level_courses } from "@/types/types";
 import { deleteCourse } from "@/supabase/actions/course_actions";
 import { useSearchParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { Label } from "@/components/ui/label";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/quill_editor/quill_editor"),
+  {
+    ssr: false,
+  }
+);
 
 type CoursesPageProps = {
   courses: Course_courses[];
   itemsPerPage: number;
   courses_count: number;
+  course_levels: Level_courses[];
+  course_categoreis: Category_courses[];
 };
 
 export default function InstructorCourses({
   courses,
   itemsPerPage,
   courses_count,
+  course_levels,
+  course_categoreis,
 }: CoursesPageProps) {
-  // console.log(courses);
+  console.log(course_levels);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | "">("");
 
   const [search, setSearch] = useState("");
@@ -70,6 +84,14 @@ export default function InstructorCourses({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("none");
   const [selectedStatus, setSelectedStatus] = useState<string | "">("all");
+  const [course_form_data, setCourseFormData] = useState({
+    name: "",
+    title: "",
+    overview: "",
+    levelid: "0",
+    categoryid: "0",
+    price: 0,
+  });
 
   useEffect(() => {
     if (searchParams) {
@@ -204,60 +226,6 @@ export default function InstructorCourses({
     router.push(`?${params.toString()}`);
   };
 
-  // Mock data - would come from API in production
-  const coursess = [
-    {
-      id: 1,
-      title: "Advanced Web Development with React",
-      thumbnail: "/placeholder.svg?height=80&width=120",
-      students: 342,
-      rating: 4.9,
-      lastUpdated: "2025-03-15",
-      status: "published",
-      category: "Web Development",
-    },
-    {
-      id: 2,
-      title: "Machine Learning Fundamentals",
-      thumbnail: "/placeholder.svg?height=80&width=120",
-      students: 256,
-      rating: 4.7,
-      lastUpdated: "2025-02-28",
-      status: "published",
-      category: "Data Science",
-    },
-    {
-      id: 3,
-      title: "Data Science for Beginners",
-      thumbnail: "/placeholder.svg?height=80&width=120",
-      students: 189,
-      rating: 4.6,
-      lastUpdated: "2025-01-20",
-      status: "published",
-      category: "Data Science",
-    },
-    {
-      id: 4,
-      title: "UI/UX Design Principles",
-      thumbnail: "/placeholder.svg?height=80&width=120",
-      students: 215,
-      rating: 4.8,
-      lastUpdated: "2025-03-05",
-      status: "published",
-      category: "Design",
-    },
-    {
-      id: 5,
-      title: "Introduction to Blockchain",
-      thumbnail: "/placeholder.svg?height=80&width=120",
-      students: 0,
-      rating: 0,
-      lastUpdated: "2025-04-01",
-      status: "draft",
-      category: "Blockchain",
-    },
-  ];
-
   const handleDeleteClick = (courseId: string) => {
     setCourseToDelete(courseId);
     setDeleteDialogOpen(true);
@@ -270,6 +238,8 @@ export default function InstructorCourses({
     setDeleteDialogOpen(false);
     setCourseToDelete("");
   };
+
+  const create_new_course = async () => {};
 
   const safeItemsPerPage = Number(itemsPerPage) || 10;
   const safeCoursesCount = Number(courses_count) || 0;
@@ -288,7 +258,10 @@ export default function InstructorCourses({
             Create, edit and manage your courses
           </p>
         </div>
-        <Button className="mt-4 md:mt-0">
+        <Button
+          className="mt-4 md:mt-0"
+          onClick={() => setCreateDialogOpen(true)}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Create New Course
         </Button>
@@ -453,9 +426,7 @@ export default function InstructorCourses({
                           </Link>
                         </Button>
                         <Button variant="outline" size="icon" asChild>
-                          <Link
-                            href={`/instructor/courses/${course.courseid}`}
-                          >
+                          <Link href={`/instructor/courses/${course.courseid}`}>
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
                           </Link>
@@ -523,6 +494,145 @@ export default function InstructorCourses({
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>New Course</DialogTitle>
+            <DialogDescription>Create a new Course</DialogDescription>
+            <div>
+              <form
+                id="new_course"
+                className="relative w-full space-y-4"
+              >
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="title" className="w-32">
+                    Title
+                  </Label>
+                  <Input
+                    id="title"
+                    type="text"
+                    placeholder="Course Title..."
+                    className="flex-1"
+                    value={course_form_data.title}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCourseFormData({
+                        ...course_form_data,
+                        title: value,
+                        name: value,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <Label htmlFor="overview" className="w-32 pt-2">
+                    Overview
+                  </Label>
+                  <div className="flex-1">
+                    <RichTextEditor />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="price" className="w-32">
+                    Price
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Price"
+                    className="flex-1"
+                    value={course_form_data.price}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCourseFormData({
+                        ...course_form_data,
+                        price: value ? parseFloat(value) : 0,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="level" className="w-32">
+                    Level
+                  </Label>
+                  <Select
+                    value={course_form_data.levelid}
+                    onValueChange={(value) =>
+                      setCourseFormData({
+                        ...course_form_data,
+                        levelid: value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem disabled value="0">
+                        Select level
+                      </SelectItem>
+
+                      {course_levels.map((level) => (
+                        <SelectItem key={level.levelid} value={level.levelid}>
+                          {level.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="course_category" className="w-32">
+                    Category
+                  </Label>
+                  <Select
+                    value={course_form_data.categoryid}
+                    onValueChange={(value) =>
+                      setCourseFormData({
+                        ...course_form_data,
+                        categoryid: value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem disabled value="0">
+                        Select category
+                      </SelectItem>
+
+                      {course_categoreis.map((category) => (
+                        <SelectItem
+                          key={category.categoryid}
+                          value={category.categoryid}
+                        >
+                          {category.categoryname}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </form>
+            </div>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={create_new_course}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

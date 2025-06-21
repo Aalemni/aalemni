@@ -1,3 +1,4 @@
+"use server";
 import { createClient } from "@/supabase/utils/server";
 
 type CourseReview = {
@@ -88,22 +89,25 @@ export const editCourseReview = async (
   };
 };
 
-export const deleteCourseReview = async (
-  reviewid: string
-): Promise<ReviewResponse> => {
+export const deleteCourseReview = async (reviewid: string) => {
+  console.log("entered backend funtion");
+  console.log(reviewid);
   const supabase = await createClient();
-
-  const { error } = await supabase
+  console.log("object");
+  console.log(reviewid);
+  const { data, error } = await supabase
     .from("course_reviews")
-    .delete()
+    .update({ isdeleted: 1 })
     .eq("reviewid", reviewid);
 
   if (error) {
-    return { success: false, message: error.message };
+    console.log("Error deleting review:", error);
+    return { success: false, message: "An error Occured", data: null };
   }
-
+  console.log("no error");
   return {
     success: true,
     message: "Review deleted successfully.",
+    data: data,
   };
 };

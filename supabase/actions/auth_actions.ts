@@ -437,7 +437,7 @@ export const signUpActionInstructor = async (formData: FormData) => {
 
   const { error: instructorError } = await supabase
     .from("instructor_details")
-    .insert([instructorDetails]);
+    .insert([instructorDetails]); 
 
   if (instructorError) {
     // Delete the user from auth and 'users' table if there's an error

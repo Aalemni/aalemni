@@ -1,7 +1,9 @@
 "use server";
 import InstructorCourses from "@/components/instructor/courses/courses";
+import { getAllCategories } from "@/supabase/actions/category_actions";
 import { getAllCourses } from "@/supabase/actions/course_actions";
-import { Course_courses } from "@/types/types";
+import { getAllCourseLevels } from "@/supabase/actions/course_level_actions";
+import { Course_courses, Level_courses } from "@/types/types";
 
 type GetAllCoursesResponse = {
   success: boolean;
@@ -49,12 +51,21 @@ export default async function Page({ searchParams }: PageProps) {
     itemsPerPage,
     sortBy
   );
+
+  const course_levels_res = await getAllCourseLevels();
+  const course_levels = course_levels_res.data;
+
+  const course_categoreis_res = await getAllCategories();
+  const course_categoreis = course_categoreis_res.data;
+
   return (
     <>
       <InstructorCourses
         courses={courses.data}
         itemsPerPage={itemsPerPage}
         courses_count={courses.courses_count}
+        course_levels={course_levels}
+        course_categoreis={course_categoreis}
       />
     </>
   );

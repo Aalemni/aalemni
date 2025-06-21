@@ -461,6 +461,50 @@ export type Review = {
   user: Logged_In_User;
 };
 
+export type Instructor_Review = {
+  reviewid: string;
+  instructorid: string;
+  userid: string;
+  description: string;
+  rate: number;
+  createdat: string;
+  users: Logged_In_User;
+};
+
+export type CourseReview = {
+  reviewid: string;
+  courseid: string;
+  userid: string;
+  description: string;
+  rate: number;
+  isdeleted: boolean;
+  createdat: string; // or Date if you convert it
+  courses: {
+    courseid: string;
+    title: string;
+    name: string;
+    overview: string;
+    price: number;
+    levelid: string;
+    categoryid: string;
+    instructorid: string;
+    createdat: string; // or Date
+    last_updated: string; // or Date
+    keytopics: string | null;
+    resources: string | null;
+    previewimage: string | null;
+  };
+  users: {
+    email: string;
+    fullname: string;
+    phonenumber: string;
+    role: string;
+    status: string;
+    userid: string;
+    username: string;
+  };
+};
+
 type Instructor_Detail_In_Course = {
   detailid: string; // UUID
   instructorid: string; // UUID
@@ -513,7 +557,7 @@ export type PartnershipType = {
 export interface PartnershipFeature {
   partnershipfeatureid: number;
   name: string;
-  icon: string ;
+  icon: string;
   description: string;
   companyid: number | 1;
 }
@@ -532,3 +576,19 @@ export interface PartnerTestimonialWithPartner {
   rate: number;
   partners: Partner;
 }
+
+export type Simplified_Course = {
+  courseid: string;
+  instructorid: string;
+  name: string;
+  title: string;
+  overview: string;
+  resources: string | null;
+  levelid: string;
+  createdat: string; // ISO date string
+  keytopics: string | null;
+  previewimage: string | null;
+  price: number;
+  categoryid: string;
+  last_updated: string; // ISO date string
+};

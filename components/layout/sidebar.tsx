@@ -58,7 +58,6 @@ export function AalemniSidebar({
   userImage,
 }: SidebarProps) {
   const pathname = usePathname();
-  console.log(userRole);
   // Navigation items based on user role
   const getNavItems = (role: UserRole) => {
     switch (role) {

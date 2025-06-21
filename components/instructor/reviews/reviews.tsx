@@ -35,175 +35,66 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  CourseReview,
+  Instructor_Review,
+  Level_courses,
+  Simplified_Course,
+} from "@/types/types";
+import { deleteCourseReview } from "@/supabase/actions/course_review";
 
-export default function InstructorReviews() {
+interface ReviewsPageProps {
+  instructor_reviews: Instructor_Review[];
+  instructor_course_reviews: CourseReview[];
+  instructor_average_rating: number;
+  instructor_courses: Simplified_Course[];
+}
+
+export default function InstructorReviews({
+  instructor_reviews,
+  instructor_course_reviews,
+  instructor_average_rating,
+  instructor_courses,
+}: ReviewsPageProps) {
   const [activeTab, setActiveTab] = useState("course-reviews");
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [courseFilter, setCourseFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [reviewToDelete, setReviewToDelete] = useState<number | null>(null);
+  const [reviewToDelete, setReviewToDelete] = useState<string | "">("");
+  const [hiddenReviewIds, setHiddenReviewIds] = useState<string[]>([]);
 
-  // Mock data - would come from API in production
-  const courseReviews = [
-    {
-      id: 1,
-      studentName: "Michael Johnson",
-      studentAvatar: "/placeholder.svg?height=40&width=40",
-      courseId: 1,
-      courseTitle: "Advanced Web Development with React",
-      rating: 5,
-      comment:
-        "This course exceeded my expectations! The content is well-structured and the explanations are clear. I especially enjoyed the practical examples that helped me understand complex concepts.",
-      date: "2025-04-01",
-      helpful: 12,
-      replied: true,
-    },
-    {
-      id: 2,
-      studentName: "Sarah Williams",
-      studentAvatar: "/placeholder.svg?height=40&width=40",
-      courseId: 1,
-      courseTitle: "Advanced Web Development with React",
-      rating: 4,
-      comment:
-        "Great course overall. The content is comprehensive and the instructor explains things well. I would have liked more advanced examples, but it's still a solid course for beginners and intermediate developers.",
-      date: "2025-03-28",
-      helpful: 8,
-      replied: false,
-    },
-    {
-      id: 3,
-      studentName: "David Lee",
-      studentAvatar: "/placeholder.svg?height=40&width=40",
-      courseId: 2,
-      courseTitle: "Machine Learning Fundamentals",
-      rating: 5,
-      comment:
-        "Excellent course! The instructor breaks down complex ML concepts into digestible pieces. The hands-on projects were particularly valuable for reinforcing the theoretical concepts.",
-      date: "2025-03-25",
-      helpful: 15,
-      replied: true,
-    },
-    {
-      id: 4,
-      studentName: "Emily Chen",
-      studentAvatar: "/placeholder.svg?height=40&width=40",
-      courseId: 3,
-      courseTitle: "Data Science for Beginners",
-      rating: 3,
-      comment:
-        "The course provides a good introduction to data science, but I found some sections to be too basic. The instructor is knowledgeable, but the pace was a bit slow for my liking.",
-      date: "2025-03-20",
-      helpful: 5,
-      replied: true,
-    },
-    {
-      id: 5,
-      studentName: "James Wilson",
-      studentAvatar: "/placeholder.svg?height=40&width=40",
-      courseId: 4,
-      courseTitle: "UI/UX Design Principles",
-      rating: 5,
-      comment:
-        "This course transformed my understanding of UI/UX design! The instructor's approach to teaching design principles is exceptional, and the assignments helped me build a strong portfolio.",
-      date: "2025-03-15",
-      helpful: 20,
-      replied: false,
-    },
-  ];
-
-  const instructorReviews = {
-    overall: 4.8,
-    total: 156,
-    distribution: [
-      { stars: 5, count: 120 },
-      { stars: 4, count: 25 },
-      { stars: 3, count: 8 },
-      { stars: 2, count: 2 },
-      { stars: 1, count: 1 },
-    ],
-    testimonials: [
-      {
-        id: 1,
-        studentName: "Alex Thompson",
-        studentAvatar: "/placeholder.svg?height=40&width=40",
-        comment:
-          "One of the best instructors I've had! Clear explanations, responsive to questions, and genuinely cares about student success.",
-        date: "2025-03-10",
-      },
-      {
-        id: 2,
-        studentName: "Jessica Martinez",
-        studentAvatar: "/placeholder.svg?height=40&width=40",
-        comment:
-          "I've taken three courses from this instructor and each one has been excellent. The teaching style is engaging and the content is always up-to-date with industry standards.",
-        date: "2025-02-28",
-      },
-      {
-        id: 3,
-        studentName: "Ryan Patel",
-        studentAvatar: "/placeholder.svg?height=40&width=40",
-        comment:
-          "What sets this instructor apart is the practical, real-world approach to teaching. The courses aren't just theoretical—they prepare you for actual work scenarios.",
-        date: "2025-02-15",
-      },
-    ],
-    improvement: [
-      {
-        id: 1,
-        category: "Content Depth",
-        suggestions:
-          "Consider adding more advanced topics for experienced students",
-        count: 12,
-      },
-      {
-        id: 2,
-        category: "Exercise Difficulty",
-        suggestions: "Some students would like more challenging assignments",
-        count: 8,
-      },
-      {
-        id: 3,
-        category: "Update Frequency",
-        suggestions:
-          "More regular updates to keep content current with latest technologies",
-        count: 5,
-      },
-    ],
-  };
-
-  const courses = [
-    { id: 1, title: "Advanced Web Development with React" },
-    { id: 2, title: "Machine Learning Fundamentals" },
-    { id: 3, title: "Data Science for Beginners" },
-    { id: 4, title: "UI/UX Design Principles" },
-  ];
-
-  const filteredReviews = courseReviews
+  const filteredReviews = instructor_course_reviews
+    .filter(
+      (review) =>
+        !review.isdeleted && !hiddenReviewIds.includes(review.reviewid)
+    )
     .filter((review) => {
-      // Apply search filter
+      const comment = review.description || "";
+      const studentName = review.users?.fullname || "Unknown";
+
+      // Search filter
       if (
         searchQuery &&
-        !review.comment.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !review.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+        !comment.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !studentName.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
         return false;
       }
 
-      // Apply rating filter
+      // Rating filter
       if (
         ratingFilter !== "all" &&
-        review.rating !== Number.parseInt(ratingFilter)
+        review.rate !== Number.parseInt(ratingFilter)
       ) {
         return false;
       }
 
-      // Apply course filter
+      // Course filter
       if (
         courseFilter !== "all" &&
-        review.courseId !== Number.parseInt(courseFilter)
+        review.courseid !== courseFilter // since it's UUID, not number
       ) {
         return false;
       }
@@ -211,34 +102,60 @@ export default function InstructorReviews() {
       return true;
     })
     .sort((a, b) => {
-      // Apply sorting
       switch (sortBy) {
         case "newest":
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          return (
+            new Date(b.createdat).getTime() - new Date(a.createdat).getTime()
+          );
         case "oldest":
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
+          return (
+            new Date(a.createdat).getTime() - new Date(b.createdat).getTime()
+          );
         case "highest":
-          return b.rating - a.rating;
+          return b.rate - a.rate;
         case "lowest":
-          return a.rating - b.rating;
-        case "most-helpful":
-          return b.helpful - a.helpful;
+          return a.rate - b.rate;
         default:
           return 0;
       }
     });
 
-  const handleDeleteClick = (reviewId: number) => {
+  const handleDeleteClick = (reviewId: string) => {
+    console.log(reviewId);
     setReviewToDelete(reviewId);
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    // In a real app, this would call an API to delete the review
-    console.log(`Deleting review ${reviewToDelete}`);
-    setDeleteDialogOpen(false);
-    setReviewToDelete(null);
+  const confirmDelete = async () => {
+    console.log("hello");
+    try {
+      const response = await deleteCourseReview(reviewToDelete);
+      console.log(response);
+      console.log("hello 2");
+
+      if (response.success) {
+        setHiddenReviewIds((prev) => [...prev, reviewToDelete]);
+      }
+
+      setDeleteDialogOpen(false);
+      setReviewToDelete("");
+    } catch (error) {
+      console.log("Error deleting review:", error);
+    }
   };
+
+  const totalInstructorReviews = instructor_reviews.length;
+
+  const instructorRatingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = instructor_reviews.filter(
+      (review) => review.rate === rating
+    ).length;
+    const percentage =
+      totalInstructorReviews > 0
+        ? Math.round((count / totalInstructorReviews) * 100)
+        : 0;
+    return { rating, percentage };
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -308,10 +225,10 @@ export default function InstructorReviews() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Courses</SelectItem>
-                      {courses.map((course) => (
+                      {instructor_courses.map((course) => (
                         <SelectItem
-                          key={course.id}
-                          value={course.id.toString()}
+                          key={course.courseid}
+                          value={course.courseid}
                         >
                           {course.title}
                         </SelectItem>
@@ -328,7 +245,6 @@ export default function InstructorReviews() {
                       <SelectItem value="oldest">Oldest First</SelectItem>
                       <SelectItem value="highest">Highest Rated</SelectItem>
                       <SelectItem value="lowest">Lowest Rated</SelectItem>
-                      <SelectItem value="most-helpful">Most Helpful</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -348,68 +264,52 @@ export default function InstructorReviews() {
             <CardContent>
               <div className="space-y-6">
                 {filteredReviews.map((review) => (
-                  <div key={review.id} className="p-4 border rounded-lg">
+                  <div key={review.reviewid} className="p-4 border rounded-lg">
                     <div className="flex justify-between items-start">
                       <div className="flex items-start">
                         <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden">
                           <img
-                            src={review.studentAvatar || "/placeholder.svg"}
-                            alt={review.studentName}
+                            src={"/placeholder.svg"}
+                            alt={review.users.fullname || "Student"}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div>
-                          <h4 className="font-medium">{review.studentName}</h4>
+                          <h4 className="font-medium">
+                            {review.users?.fullname || "Anonymous"}
+                          </h4>
                           <div className="flex items-center mt-1">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`h-4 w-4 ${i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                                className={`h-4 w-4 ${
+                                  i < review.rate
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-gray-300"
+                                }`}
                               />
                             ))}
                             <span className="text-sm text-gray-500 ml-2">
-                              {new Date(review.date).toLocaleDateString()}
+                              {new Date(review.createdat).toLocaleDateString()}
                             </span>
                           </div>
                           <p className="text-sm text-gray-500 mt-1">
-                            Course: {review.courseTitle}
+                            Course: {review.courses?.title || "Unknown Course"}
                           </p>
                         </div>
                       </div>
                       <div className="flex">
-                        <Button variant="ghost" size="sm" className="mr-2">
-                          <Flag className="h-4 w-4" />
-                          <span className="sr-only">Flag</span>
-                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteClick(review.id)}
+                          onClick={() => handleDeleteClick(review.reviewid)}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>
                       </div>
                     </div>
-                    <p className="mt-3">{review.comment}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        <span>{review.helpful} found this helpful</span>
-                      </div>
-                      <div>
-                        {review.replied ? (
-                          <Badge variant="outline" className="mr-2">
-                            Replied
-                          </Badge>
-                        ) : (
-                          <Button variant="outline" size="sm">
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Reply
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                    <p className="mt-3">{review.description}</p>
                   </div>
                 ))}
 
@@ -437,18 +337,19 @@ export default function InstructorReviews() {
                 <div className="flex flex-col items-center">
                   <h3 className="text-lg font-medium mb-4">Overall Rating</h3>
                   <div className="text-5xl font-bold">
-                    {instructorReviews.overall}
+                    {instructor_average_rating}
                   </div>
                   <div className="flex items-center mt-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${i < Math.floor(instructorReviews.overall) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                        className={`h-5 w-5 ${i < Math.floor(instructor_average_rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
                       />
                     ))}
                   </div>
                   <div className="text-sm text-gray-500 mt-2">
-                    Based on {instructorReviews.total} ratings
+                    Based on {totalInstructorReviews}{" "}
+                    {totalInstructorReviews === 1 ? "review" : "reviews"}
                   </div>
                 </div>
               </CardContent>
@@ -459,34 +360,38 @@ export default function InstructorReviews() {
                 <h3 className="text-lg font-medium mb-4">
                   Rating Distribution
                 </h3>
-                {instructorReviews.distribution.map((item) => (
-                  <div key={item.stars} className="flex items-center mb-2">
-                    <div className="w-16 flex items-center">
-                      <span className="mr-1">{item.stars}</span>
-                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    </div>
-                    <div className="flex-1 mx-4">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-yellow-400 h-2.5 rounded-full"
-                          style={{
-                            width: `${(item.count / instructorReviews.total) * 100}%`,
-                          }}
-                        ></div>
+                <div className="mt-6 space-y-4">
+                  {instructorRatingDistribution.map(
+                    ({ rating, percentage }) => (
+                      <div key={rating} className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <span>{rating}</span>
+                          <svg
+                            className="h-4 w-4 text-yellow-400 fill-yellow-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                        </div>
+                        <div className="h-2 flex-1 rounded-full bg-muted">
+                          <div
+                            className="h-2 rounded-full bg-aalemni-orange"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {percentage}%
+                        </span>
                       </div>
-                    </div>
-                    <div className="w-16 text-right text-sm text-gray-500">
-                      {item.count} (
-                      {Math.round((item.count / instructorReviews.total) * 100)}
-                      %)
-                    </div>
-                  </div>
-                ))}
+                    )
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-6 mb-8">
             <Card>
               <CardHeader>
                 <CardTitle>Student Testimonials</CardTitle>
@@ -496,50 +401,29 @@ export default function InstructorReviews() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {instructorReviews.testimonials.map((testimonial) => (
-                    <div key={testimonial.id} className="p-4 border rounded-lg">
+                  {instructor_reviews.map((review) => (
+                    <div
+                      key={review.reviewid}
+                      className="p-4 border rounded-lg"
+                    >
                       <div className="flex items-start">
                         <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden">
                           <img
-                            src={
-                              testimonial.studentAvatar || "/placeholder.svg"
-                            }
-                            alt={testimonial.studentName}
+                            src={"/placeholder.svg"}
+                            alt={review.users.fullname}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div>
                           <h4 className="font-medium">
-                            {testimonial.studentName}
+                            {review.users.fullname}
                           </h4>
                           <p className="text-sm text-gray-500 mt-1">
-                            {new Date(testimonial.date).toLocaleDateString()}
+                            {new Date(review.createdat).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <p className="mt-3">{testimonial.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Suggestions for Improvement</CardTitle>
-                <CardDescription>
-                  Anonymous feedback to help you improve your courses
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {instructorReviews.improvement.map((item) => (
-                    <div key={item.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium">{item.category}</h4>
-                        <Badge variant="outline">{item.count} students</Badge>
-                      </div>
-                      <p className="mt-2 text-gray-600">{item.suggestions}</p>
+                      <p className="mt-3">{review.description}</p>
                     </div>
                   ))}
                 </div>
@@ -547,7 +431,7 @@ export default function InstructorReviews() {
             </Card>
           </div>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Instructor Performance Metrics</CardTitle>
               <CardDescription>
@@ -636,7 +520,7 @@ export default function InstructorReviews() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </TabsContent>
       </Tabs>
 
