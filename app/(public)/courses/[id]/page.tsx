@@ -2,6 +2,7 @@
 
 import CourseDetailPage from "@/components/course_by_id/course_by_id";
 import { getCourseById } from "@/supabase/actions/course_actions";
+import { createClient } from "@/supabase/utils/server";
 import { Course, Course_by_id } from "@/types/types"; // If you created a separate type file
 import { type Metadata } from "next";
 
@@ -231,8 +232,13 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: PageProps) {
+    const supabase = await createClient();
+    const {
+      data: { user },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    } = await supabase.auth.getUser();
+    
   const { id } = await params;
   const course = await getCourse(id);
   const coursee = await getCourseById(id);
-  return <CourseDetailPage course={coursee.data} />;
+  return <CourseDetailPage course={coursee.data}/>;
 }
