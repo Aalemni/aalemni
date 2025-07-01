@@ -424,10 +424,7 @@ export const editCourseOverview = async (course_id: string, text: string) => {
     .eq("courseid", course_id)
     .single();
 
-    
-
   if (fetchError || !existingCourse) {
-    console.log("tet", existingCourse);
     return { success: false, message: "Course not found or fetch failed." };
   }
 
@@ -451,6 +448,53 @@ export const editCourseOverview = async (course_id: string, text: string) => {
   }
 
   return { success: true, message: "Course updated successfully" };
+};
+
+export const getRelatedCourses = async (courseId: string) => {
+  const supabase = await createClient();
+
+  // fetch main course
+  const { data: baseCourse, error: courseError } = await supabase
+    .from("courses")
+    .select("courseid, instructorid, categoryid, title")
+    .eq("courseid", courseId)
+    .single();
+
+  console.log(baseCourse);
+  if (courseError || !baseCourse) {
+    return {
+      success: false,
+      message: courseError?.message || "Course not found",
+      data: [],
+    };
+  }
+
+  const { instructorid, categoryid, title } = baseCourse;
+
+  // fetch related courses based on the base course
+  const { data: relatedCourses, error: relatedError } = await supabase
+    .from("courses")
+    .select(`*, instructor:instructorid (*) `)
+    .or(
+      `instructorid.eq.${instructorid},categoryid.eq.${categoryid},title.ilike.%${title.split(" ")[0]}%`
+    )
+    .neq("courseid", courseId)
+    .limit(10);
+
+  console.log("Test", relatedCourses, " ", relatedError );
+  if (relatedError) {
+    return {
+      success: false,
+      message: relatedError.message,
+      data: [],
+    };
+  }
+
+  return {
+    success: true,
+    message: "Related courses fetched successfully",
+    data: relatedCourses,
+  };
 };
 
 // export const deleteCourse = async (id: string) => {

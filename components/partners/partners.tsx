@@ -113,7 +113,8 @@ export default function PartnersPage({
               <div className="relative w-full max-w-lg rounded-lg border bg-background shadow-xl">
                 <div className="aspect-video relative rounded-t-lg overflow-hidden">
                   <Image
-                    src="/placeholder.svg?height=720&width=1280&text=Partnership+Program"
+                    // src="/placeholder.svg?height=720&width=1280&text=Partnership+Program"
+                    src="/collaboration.jpg"
                     alt="Aalemni Partnership Program"
                     fill
                     className="object-cover"

@@ -31,17 +31,32 @@ import {
 import { Course, Course_by_id } from "@/types/types";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { editCourseOverview } from "@/supabase/actions/course_actions";
+import {
+  editCourseOverview,
+  getRelatedCourses,
+} from "@/supabase/actions/course_actions";
 
 export default function CourseDetailPage({ course }: { course: Course_by_id }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [OverviewText, setOverviewText] = useState<string>("");
+  const [relatedCourses, setRelatedCourses] = useState<Course[] | undefined>([]);
 
   const totalReviews = course.reviews.length;
 
   const updateCourse = async () => {
     const result = await editCourseOverview(course.courseid, OverviewText);
-    console.log(result);
+  };
+
+  const fetchRelatedCourses = async () => {
+    try {
+      const result = await getRelatedCourses(course.courseid);
+      console.log(result.message + " ", result.success);
+      setRelatedCourses(result.data);
+    
+    } catch (error) {
+      console.log("Error fetching related courses", error);
+    } finally {
+    }
   };
 
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
@@ -55,6 +70,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
 
   useEffect(() => {
     setOverviewText(course.overview);
+    fetchRelatedCourses();
   }, [course.overview]);
 
   return (
@@ -239,7 +255,10 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                   <div>
                     {isEditing ? (
                       <div className="">
-                        <RichTextEditor value={OverviewText} onChange={setOverviewText}/>
+                        <RichTextEditor
+                          value={OverviewText}
+                          onChange={setOverviewText}
+                        />
                         <div className="flex flex-row py-2 my-2 gap-10">
                           <Button
                             variant={"destructive"}
@@ -437,11 +456,11 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
 
             <div>
               <h2 className="text-2xl font-bold mb-6">Related Courses</h2>
-              {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {course.relatedCourses.map((relatedCourse) => (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedCourses!.map((relatedCourse) => (
                   <Link
-                    key={relatedCourse.id}
-                    href={`/courses/${relatedCourse.id}`}
+                    key={relatedCourse.courseid}
+                    href={`/courses/${relatedCourse.courseid}`}
                   >
                     <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                       <div className="aspect-video relative">
@@ -466,7 +485,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                           {relatedCourse.title}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {relatedCourse.instructor}
+                          {relatedCourse.instructor.fullname}
                         </p>
                         <div className="mt-2 flex items-center gap-1">
                           <div className="flex">
@@ -494,7 +513,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                     </Card>
                   </Link>
                 ))}
-              </div> */}
+              </div>
             </div>
           </TabsContent>
 
