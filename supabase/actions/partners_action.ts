@@ -103,7 +103,8 @@ export const getAllPartners = async (): Promise<ApiResponse<Partner[]>> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("partners")
-    .select("*, users:userid(*)");
+    .select("*, users:userid(*)")
+    .eq("status", 2) // if status is accepted
 
   return {
     success: !error,

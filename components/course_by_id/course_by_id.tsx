@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,6 +15,8 @@ import {
   Download,
 } from "lucide-react";
 
+import { User } from "@supabase/auth-js";
+import { RichTextEditor } from "@/components/editor/rich_text_editor";
 import { Button } from "@/components/uii_/button";
 import { Badge } from "@/components/uii_/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,10 +30,34 @@ import {
 } from "@/components/ui/accordion";
 import { Course, Course_by_id } from "@/types/types";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  editCourseOverview,
+  getRelatedCourses,
+} from "@/supabase/actions/course_actions";
 
 export default function CourseDetailPage({ course }: { course: Course_by_id }) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [OverviewText, setOverviewText] = useState<string>("");
+  const [relatedCourses, setRelatedCourses] = useState<Course[] | undefined>([]);
+
   const totalReviews = course.reviews.length;
+
+  const updateCourse = async () => {
+    const result = await editCourseOverview(course.courseid, OverviewText);
+  };
+
+  const fetchRelatedCourses = async () => {
+    try {
+      const result = await getRelatedCourses(course.courseid);
+      console.log(result.message + " ", result.success);
+      setRelatedCourses(result.data);
+    
+    } catch (error) {
+      console.log("Error fetching related courses", error);
+    } finally {
+    }
+  };
 
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
     const count = course.reviews.filter(
@@ -40,6 +67,12 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
       totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
     return { rating, percentage };
   });
+
+  useEffect(() => {
+    setOverviewText(course.overview);
+    fetchRelatedCourses();
+  }, [course.overview]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Course Header */}
@@ -89,7 +122,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                       {course.instructor.fullname}
                     </Link>
                     <p className="text-sm text-gray-300">
-                      {course.instructor_details.role}
+                      {course.instructor_details?.role ?? "No Role Available"}
                     </p>
                   </div>
                 </div>
@@ -200,10 +233,10 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1">
               <div className="space-y-8">
-                <div>
+                <div className="flex flex-col gap-4">
                   {/* <h2 className="text-2xl font-bold mb-4">
                     Course Description
-                  </h2> */}
+                  </h2> *
                   {/* <div className="prose max-w-none">
                     {course.description.split("\n\n").map((paragraph, i) => (
                       <p key={i} className="mb-4">
@@ -211,8 +244,41 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                       </p>
                     ))}
                   </div> */}
-                  <div
-                    className="
+
+                  {/* Overview Container */}
+                  <Button
+                    className="self-end"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit
+                  </Button>
+                  <div>
+                    {isEditing ? (
+                      <div className="">
+                        <RichTextEditor
+                          value={OverviewText}
+                          onChange={setOverviewText}
+                        />
+                        <div className="flex flex-row py-2 my-2 gap-10">
+                          <Button
+                            variant={"destructive"}
+                            size={"lg"}
+                            onClick={() => setIsEditing(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant={"save"}
+                            size={"lg"}
+                            onClick={updateCourse}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="
                     rendered-html
                     [&_h1]:text-3xl [&_h1]:font-bold
                     [&_h2]:text-2xl [&_h2]:font-semibold
@@ -231,8 +297,10 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                     [&_li]:mb-1
                     [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
                     "
-                    dangerouslySetInnerHTML={{ __html: course.overview }}
-                  />
+                        dangerouslySetInnerHTML={{ __html: OverviewText }}
+                      />
+                    )}
+                  </div>
                 </div>
 
                 {/* <div>
@@ -388,11 +456,11 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
 
             <div>
               <h2 className="text-2xl font-bold mb-6">Related Courses</h2>
-              {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {course.relatedCourses.map((relatedCourse) => (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedCourses!.map((relatedCourse) => (
                   <Link
-                    key={relatedCourse.id}
-                    href={`/courses/${relatedCourse.id}`}
+                    key={relatedCourse.courseid}
+                    href={`/courses/${relatedCourse.courseid}`}
                   >
                     <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                       <div className="aspect-video relative">
@@ -417,7 +485,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                           {relatedCourse.title}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {relatedCourse.instructor}
+                          {relatedCourse.instructor.fullname}
                         </p>
                         <div className="mt-2 flex items-center gap-1">
                           <div className="flex">
@@ -445,7 +513,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                     </Card>
                   </Link>
                 ))}
-              </div> */}
+              </div>
             </div>
           </TabsContent>
 
@@ -621,7 +689,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                     {course.instructor.fullname}
                   </h2>
                   <p className="text-muted-foreground">
-                    {course.instructor_details.role}
+                    {course.instructor_details?.role}
                   </p>
 
                   {/* <div className="mt-4 flex items-center justify-center gap-2">
@@ -681,7 +749,7 @@ export default function CourseDetailPage({ course }: { course: Course_by_id }) {
                     [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
                     "
                     dangerouslySetInnerHTML={{
-                      __html: course.instructor_details.bio,
+                      __html: course.instructor_details?.bio ?? "",
                     }}
                   />
                 </div>

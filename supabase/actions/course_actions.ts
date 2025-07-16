@@ -129,8 +129,7 @@ export const getAllCourses_OLD = async (
   let courseQuery = supabase
     .from("courses")
     .select("*, instructor:instructorid(*), category:categoryid(*)")
-    .or(`title.ilike.%${query}%,overview.ilike.%${query}%`)
-
+    .or(`title.ilike.%${query}%,overview.ilike.%${query}%`);
 
   const { data, count } = await supabase
     .from("courses")
@@ -405,6 +404,97 @@ export const editCourse = async (id: string, formData: FormData) => {
   }
 
   return { success: true, message: "Course updated successfully" };
+};
+
+export const editCourseOverview = async (course_id: string, text: string) => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (!user || userError) {
+    return { success: false, message: "Unauthorized: You must be logged in." };
+  }
+
+  const { data: existingCourse, error: fetchError } = await supabase
+    .from("courses")
+    .select("instructorid")
+    .eq("courseid", course_id)
+    .single();
+
+  if (fetchError || !existingCourse) {
+    return { success: false, message: "Course not found or fetch failed." };
+  }
+
+  if (existingCourse.instructorid !== user.id) {
+    return {
+      success: false,
+      message: "You are not authorized to edit this course.",
+    };
+  }
+
+  const { error: updateError } = await supabase
+    .from("courses")
+    .update({ overview: text })
+    .eq("courseid", course_id);
+
+  if (updateError) {
+    return {
+      success: false,
+      message: `Failed to update course: ${updateError.message}`,
+    };
+  }
+
+  return { success: true, message: "Course updated successfully" };
+};
+
+export const getRelatedCourses = async (courseId: string) => {
+  const supabase = await createClient();
+
+  // fetch main course
+  const { data: baseCourse, error: courseError } = await supabase
+    .from("courses")
+    .select("courseid, instructorid, categoryid, title")
+    .eq("courseid", courseId)
+    .single();
+
+  console.log(baseCourse);
+  if (courseError || !baseCourse) {
+    return {
+      success: false,
+      message: courseError?.message || "Course not found",
+      data: [],
+    };
+  }
+
+  const { instructorid, categoryid, title } = baseCourse;
+
+  // fetch related courses based on the base course
+  const { data: relatedCourses, error: relatedError } = await supabase
+    .from("courses")
+    .select(`*, instructor:instructorid (*) `)
+    .or(
+      `instructorid.eq.${instructorid},categoryid.eq.${categoryid},title.ilike.%${title.split(" ")[0]}%`
+    )
+    .neq("courseid", courseId)
+    .limit(10);
+
+  console.log("Test", relatedCourses, " ", relatedError );
+  if (relatedError) {
+    return {
+      success: false,
+      message: relatedError.message,
+      data: [],
+    };
+  }
+
+  return {
+    success: true,
+    message: "Related courses fetched successfully",
+    data: relatedCourses,
+  };
 };
 
 // export const deleteCourse = async (id: string) => {
@@ -682,7 +772,7 @@ export const getCourseById = async (
     .from("instructor_details")
     .select("*")
     .eq("instructorid", courseData?.instructorid)
-    .single();
+    .maybeSingle();
 
   const { data: durationData } = await supabase
     .rpc("get_course_durations")

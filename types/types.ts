@@ -1,10 +1,10 @@
 export type Course = {
-  id: number;
+  courseid: number;
   title: string;
   image: string;
   instructor: {
     id: number;
-    name: string;
+    fullname: string;
     title: string;
     image: string;
     rating: number;
