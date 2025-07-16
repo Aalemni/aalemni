@@ -59,8 +59,9 @@ export type Course = {
 };
 
 export type Instructor = {
-  id: number;
+  userid: number;
   name: string;
+  email: string;
   title: string;
   image: string;
   coverImage: string;
@@ -546,4 +547,44 @@ export type PartnerDataRequest = {
   status: number;
   organization_name?: string | null;
   partnership_goal?: string | null;
+};
+
+export type IntructorDetails = {
+  userid: string;
+  fullname: string;
+  username: string;
+  email: string;
+  status: string;
+  average_rating: number;
+  bio: string;
+  price: number;
+  languages: string[];
+  years_exp: number;
+  social_links: { platform: string; url: string }[];
+  experience: { company: string; years: number }[];
+  certificates: { name: string }[];
+  specialties:
+    | {
+        specialityid: string;
+        specialityname: string;
+        color?: string;
+        icon?: string;
+      }[]
+    | null;
+  skills:
+    | {
+        id: number;
+        name: string;
+      }[]
+    | null;
+};
+
+export type IntructorFilter = {
+  languages: string[];
+  specialities: string[];
+  minPrice: number;
+  maxPrice: number;
+  minRating: number;
+  maxRating: number;
+  experience: [];
 };

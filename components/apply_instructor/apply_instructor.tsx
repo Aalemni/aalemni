@@ -80,6 +80,7 @@ export default function ApplyAsInstructorPage({
 
       console.log(formData);
       console.log(selectedSpecialties);
+      console.log("Selected Specialties:", selectedSpecialties);
       const result = await signUpActionInstructor(data);
       if (result) {
         if (!result.success) {
